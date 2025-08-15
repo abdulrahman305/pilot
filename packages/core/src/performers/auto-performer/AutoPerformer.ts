@@ -1,23 +1,26 @@
 import { AutoPerformerPromptCreator } from "./AutoPerformerPromptCreator";
 import {
+  AutoPerformerCacheValue,
   AutoPreviousStep,
   AutoReport,
   AutoReview,
   AutoReviewSection,
+  AutoReviewSectionConfig,
   AutoStepPlan,
   AutoStepReport,
-  LoggerMessageColor,
-  PreviousStep,
-  PromptHandler,
-  ScreenCapturerResult,
-} from "@/types";
+} from "@/types/auto";
+import { PreviousStep, PromptHandler, ScreenCapturerResult } from "@/types";
+import { LoggerMessageColor, LoggerMessageComponent } from "@/types/logger";
 import {
-  extractTaggedOutputs,
-  OUTPUTS_MAPPINGS,
+  extractAutoPilotReviewOutputs,
+  extractAutoPilotStepOutputs,
 } from "@/common/extract/extractTaggedOutputs";
+import { parseFormattedText } from "./reviews/format-utils";
 import { StepPerformer } from "@/performers/step-performer/StepPerformer";
 import { ScreenCapturer } from "@/common/snapshot/ScreenCapturer";
 import logger from "@/common/logger";
+import { CacheHandler } from "@/common/cacheHandler/CacheHandler";
+import { SnapshotComparator } from "@/common/snapshot/comparator/SnapshotComparator";
 
 export class AutoPerformer {
   constructor(
@@ -25,223 +28,373 @@ export class AutoPerformer {
     private stepPerformer: StepPerformer,
     private promptHandler: PromptHandler,
     private screenCapturer: ScreenCapturer,
+    private cacheHandler: CacheHandler,
+    private snapshotComparator: SnapshotComparator,
   ) {}
 
-  private extractReviewOutput(text: string): AutoReviewSection {
-    const { summary, findings, score } = extractTaggedOutputs({
-      text,
-      outputsMapper: OUTPUTS_MAPPINGS.PILOT_REVIEW_SECTION,
-    });
+  private extractReviewOutput(text: string): AutoReviewSection | null {
+    const { summary, findings, score } = extractAutoPilotReviewOutputs(text);
+
+    if (!summary) {
+      return null;
+    }
 
     return {
       summary,
       findings: findings
-        ?.split("\n")
-        .map((finding: string) => finding.replace(/^- /, "").trim()),
+        ? findings
+            .split("\n")
+            .map((finding: string) => finding.replace(/^- /, "").trim())
+        : undefined,
       score,
     };
   }
 
-  private logReviewSection(
+  private formatReviewSection(
     review: AutoReviewSection,
-    type: "ux" | "a11y" | "i18n",
-  ) {
-    const config: {
-      [key: string]: {
-        emoji: string;
-        color: LoggerMessageColor;
-        findingColor: LoggerMessageColor;
-      };
-    } = {
-      ux: {
-        emoji: "🎨",
-        color: "magentaBright",
-        findingColor: "magenta",
-      },
-      a11y: {
-        emoji: "👁️ ",
-        color: "yellowBright",
-        findingColor: "yellow",
-      },
-      i18n: {
-        emoji: "🌐",
-        color: "cyanBright",
-        findingColor: "cyan",
-      },
-    };
+    typeObject: AutoReviewSectionConfig,
+  ): LoggerMessageComponent[] {
+    const summaryMessage = review.score
+      ? `${review.summary} (Score: ${review.score})`
+      : review.summary;
 
-    logger.info({
-      message: `📝${config[type].emoji} Pilot ${type.toUpperCase()} review: ${review?.summary} (Score: ${review?.score})`,
+    const formattedResults: LoggerMessageComponent[] = [];
+    formattedResults.push({ message: "\n", isBold: false, color: "white" });
+    formattedResults.push({
+      message: `${typeObject.title.toUpperCase()}: `,
       isBold: true,
-      color: config[type].color,
+      color: "green",
     });
+    formattedResults.push(...parseFormattedText(summaryMessage));
 
-    review.findings?.forEach((finding) => {
-      logger.info({
-        message: `🔍 ${finding}`,
-        isBold: false,
-        color: config[type].findingColor,
+    if (review.findings?.length) {
+      formattedResults.push({ message: "\n", isBold: false, color: "white" });
+      review.findings.forEach((finding) => {
+        formattedResults.push({ message: "\n", isBold: false, color: "white" });
+        formattedResults.push({
+          message: "  - ",
+          isBold: false,
+          color: "white",
+        });
+        formattedResults.push(...parseFormattedText(finding));
       });
-    });
+    }
+
+    return formattedResults;
   }
 
   async analyseScreenAndCreatePilotStep(
     goal: string,
     previousSteps: AutoPreviousStep[],
     screenCapture: ScreenCapturerResult,
+    reviewSectionTypes?: AutoReviewSectionConfig[],
+    maxAttempts: number = 2,
   ): Promise<AutoStepReport> {
-    const analysisLoggerSpinner = logger.startSpinner(
-      "🤔 Thinking on next step",
+    const cacheKey = this.cacheHandler.generateCacheKey({
+      goal,
+      previousSteps,
+    });
+
+    if (this.cacheHandler.isCacheInUse() && cacheKey) {
+      const cacheResult = await this.getValueFromCache(
+        cacheKey,
+        screenCapture,
+        reviewSectionTypes,
+      );
+      if (cacheResult) {
+        return cacheResult;
+      }
+    }
+
+    const analysisProgress = logger.startProgress(
       {
-        message: goal,
+        actionLabel: "ANALYZE",
+        successLabel: "READY",
+        failureLabel: "FAILED",
+      },
+      {
+        message: "Analyzing current screen content and structure",
         isBold: true,
         color: "whiteBright",
       },
     );
 
-    try {
-      const { snapshot, viewHierarchy, isSnapshotImageAttached } =
-        screenCapture;
+    const lastError: any = null;
+    let lastScreenDescription = "";
+    let lastAction = "";
 
-      const prompt = this.promptCreator.createPrompt(
-        goal,
-        viewHierarchy,
-        isSnapshotImageAttached,
-        previousSteps,
-      );
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const prompt = this.promptCreator.createPrompt(
+          goal,
+          screenCapture.viewHierarchy ?? "Unknown view hierarchy",
+          !!screenCapture.snapshot,
+          previousSteps,
+          reviewSectionTypes,
+        );
 
-      const promptResult = await this.promptHandler.runPrompt(prompt, snapshot);
-      const outputs = extractTaggedOutputs({
-        text: promptResult,
-        outputsMapper: OUTPUTS_MAPPINGS.PILOT_STEP,
-      });
+        const promptResult = await this.promptHandler.runPrompt(
+          prompt,
+          screenCapture.snapshot,
+        );
 
-      const { screenDescription, thoughts, action, ux, a11y, i18n } = outputs;
-      const plan: AutoStepPlan = { action, thoughts };
-      const goalAchieved = action === "success";
+        const outputs = extractAutoPilotStepOutputs(
+          promptResult,
+          reviewSectionTypes,
+        );
 
-      analysisLoggerSpinner.stop("success", "💡 Next step ready", {
-        message: plan.action,
-        isBold: true,
-        color: "whiteBright",
-      });
+        // These fields are required according to the extractor, so we can safely assert they exist
+        const thoughts = outputs.thoughts as string;
+        lastScreenDescription = outputs.screenDescription as string;
+        lastAction = outputs.action as string;
+        const plan: AutoStepPlan = { action: lastAction, thoughts };
+        const goalAchieved = !!outputs.goalSummary;
 
-      logger.info({
-        message: `🤔 Thoughts: ${thoughts}`,
-        isBold: false,
-        color: "grey",
-      });
-
-      const review: AutoReview = {
-        ux: ux ? this.extractReviewOutput(ux) : undefined,
-        a11y: a11y ? this.extractReviewOutput(a11y) : undefined,
-        i18n: i18n ? this.extractReviewOutput(i18n) : undefined,
-      };
-
-      if (review.ux || review.a11y || review.i18n) {
-        logger.info({
-          message: `Conducting review for ${screenDescription}\n`,
+        analysisProgress.stop("success", {
+          message: "Screen analysis complete, next action determined",
           isBold: true,
-          color: "whiteBright",
+          color: "green",
         });
 
-        review.ux && this.logReviewSection(review.ux, "ux");
-        review.a11y && this.logReviewSection(review.a11y, "a11y");
-        review.i18n && this.logReviewSection(review.i18n, "i18n");
+        // Log thoughts with formatted text
+        const formattedThoughts = parseFormattedText(thoughts as string);
+        logger.labeled("THOUGHTS").info(...formattedThoughts);
+
+        const review: AutoReview = {};
+
+        if (reviewSectionTypes && reviewSectionTypes.length > 0) {
+          reviewSectionTypes.forEach((reviewType) => {
+            const reviewContent = outputs[reviewType.title];
+            if (reviewContent) {
+              const extractedReview = this.extractReviewOutput(reviewContent);
+              if (extractedReview) {
+                review[reviewType.title] = extractedReview;
+              }
+            }
+          });
+        }
+
+        const hasReviews = Object.keys(review).length > 0;
+
+        if (hasReviews) {
+          this.logReviews(lastScreenDescription, review, reviewSectionTypes);
+        }
+
+        const summary = outputs.goalSummary;
+
+        if (this.cacheHandler.isCacheInUse() && cacheKey) {
+          const snapshotHashes =
+            await this.cacheHandler.generateHashes(screenCapture);
+
+          const cacheValue: AutoPerformerCacheValue = {
+            screenDescription: lastScreenDescription,
+            plan,
+            review,
+            goalAchieved,
+            summary,
+          };
+
+          this.cacheHandler.addToTemporaryCacheSnapshotBased(
+            cacheKey,
+            cacheValue,
+            snapshotHashes,
+          );
+        }
+
+        return {
+          screenDescription: lastScreenDescription,
+          plan,
+          review,
+          goalAchieved,
+          summary,
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : error;
+        logger
+          .labeled("ERROR")
+          .error(
+            `Analysis attempt ${attempt}/${maxAttempts} failed: ${errorMessage}`,
+          );
+
+        if (attempt < maxAttempts) {
+          logger.labeled("RETRYING").warn("Initiating new analysis attempt");
+
+          previousSteps = [
+            ...previousSteps,
+            {
+              screenDescription: lastScreenDescription,
+              step: lastAction,
+              error: errorMessage,
+            },
+          ];
+        } else {
+          analysisProgress.stop(
+            "failure",
+            `Screen analysis failed: ${errorMessage}`,
+          );
+          throw lastError;
+        }
       }
-
-      const summary = goalAchieved
-        ? extractTaggedOutputs({
-            text: thoughts,
-            outputsMapper: OUTPUTS_MAPPINGS.PILOT_SUMMARY,
-          }).summary
-        : undefined;
-
-      return {
-        screenDescription,
-        plan,
-        review,
-        goalAchieved,
-        summary,
-      };
-    } catch (error) {
-      analysisLoggerSpinner.stop(
-        "failure",
-        `😓 Pilot encountered an error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      throw error;
     }
+    throw new Error("Analysis failed to reach a decision");
   }
 
-  async perform(goal: string): Promise<AutoReport> {
+  async perform(
+    goal: string,
+    reviewSectionTypes?: AutoReviewSectionConfig[],
+  ): Promise<AutoReport> {
     const maxSteps = 100;
-    let previousSteps: AutoPreviousStep[] = [];
-    let pilotSteps: PreviousStep[] = [];
+    const previousSteps: AutoPreviousStep[] = [];
+    const pilotSteps: PreviousStep[] = [];
     const report: AutoReport = { goal, steps: [] };
 
-    logger.info(
+    // Create the overall goal progress with minimal labels
+    const mainProgress = logger.startProgress(
       {
-        message: `🛫 Pilot is about to reach goal:\n`,
-        isBold: false,
-        color: "cyan",
+        actionLabel: "GOAL",
+        successLabel: "DONE",
+        failureLabel: "FAILED",
       },
       {
         message: goal,
         isBold: true,
-        color: "cyanBright",
+        color: "whiteBright",
       },
     );
 
     for (let step = 0; step < maxSteps; step++) {
-      const screenCapture = await this.screenCapturer.capture();
+      // Capture the screen silently (without separate logging)
+      const screenCaptureWithoutHighlight =
+        await this.screenCapturer.capture(false);
+
+      // Analyze the screen and plan the next step
       const stepReport = await this.analyseScreenAndCreatePilotStep(
         goal,
         [...previousSteps],
-        screenCapture,
+        screenCaptureWithoutHighlight,
+        reviewSectionTypes ? reviewSectionTypes : undefined,
       );
 
       if (stepReport.goalAchieved) {
         report.summary = stepReport.summary;
         report.review = stepReport.review;
 
-        logger.info(`🛬 Pilot reached goal: "${goal}"! 🎉 Summarizing:\n`, {
-          message: `${stepReport.summary}`,
+        // Format summary with our formatting parser if available
+        const formattedSummary = report.summary
+          ? parseFormattedText(report.summary)
+          : [
+              {
+                message: "Goal completed successfully",
+                isBold: false,
+                color: "green" as LoggerMessageColor,
+              },
+            ];
+
+        // Complete the main progress
+        mainProgress.stop("success", {
+          message: "Success",
           isBold: true,
-          color: "whiteBright",
+          color: "green",
         });
-        logger.writeLogsToFile(`pilot_logs_${Date.now()}`);
+
+        logger.labeled("SUMMARY").info(...formattedSummary);
         break;
       }
 
+      const screenCaptureWithHighlight =
+        await this.screenCapturer.capture(true);
       const { code, result } = await this.stepPerformer.perform(
         stepReport.plan.action,
         [...pilotSteps],
-        screenCapture,
+        screenCaptureWithHighlight,
       );
 
       report.steps.push({ code, ...stepReport });
-
-      pilotSteps = [
-        ...pilotSteps,
-        { step: stepReport.plan.action, code, result },
-      ];
-
-      previousSteps = [
-        ...previousSteps,
-        {
-          screenDescription: stepReport.screenDescription,
-          step: stepReport.plan.action,
-          review: stepReport.review,
-        },
-      ];
+      pilotSteps.push({ step: stepReport.plan.action, code, result });
+      previousSteps.push({
+        screenDescription: stepReport.screenDescription,
+        step: stepReport.plan.action,
+        review: stepReport.review,
+      });
 
       if (step === maxSteps - 1) {
-        logger.warn(
-          `🚨 Pilot reached the maximum number of steps (${maxSteps}) without reaching the goal.`,
-        );
+        mainProgress.stop("warn", {
+          message: "Limit reached",
+          isBold: true,
+          color: "yellow",
+        });
       }
     }
 
     return report;
+  }
+
+  private logReviews(
+    screenDescription: string,
+    review: AutoReview,
+    reviewSectionTypes?: AutoReviewSectionConfig[],
+  ): void {
+    const allReviewComponents: LoggerMessageComponent[] = [];
+
+    allReviewComponents.push(...parseFormattedText(screenDescription));
+
+    Object.keys(review).forEach((reviewType) => {
+      if (review[reviewType]) {
+        const reviewTypeConfig = reviewSectionTypes?.find(
+          (rt) => rt.title.toLowerCase() === reviewType.toLowerCase(),
+        );
+        if (reviewTypeConfig !== undefined) {
+          allReviewComponents.push(
+            ...this.formatReviewSection(review[reviewType], reviewTypeConfig),
+          );
+        }
+      }
+    });
+
+    logger.labeled("REVIEWING").info(...allReviewComponents);
+  }
+
+  private async getValueFromCache(
+    cacheKey: string,
+    screenCapture: ScreenCapturerResult,
+    reviewSectionTypes?: AutoReviewSectionConfig[],
+  ): Promise<AutoStepReport | undefined> {
+    const cachedValues =
+      this.cacheHandler.getFromPersistentCache<AutoPerformerCacheValue>(
+        cacheKey,
+      );
+    if (!cachedValues) {
+      return undefined;
+    }
+
+    const snapshotHashes =
+      await this.snapshotComparator.generateHashes(screenCapture);
+
+    const matchingEntry =
+      this.cacheHandler.findMatchingCacheEntrySnapshotBased<AutoPerformerCacheValue>(
+        cachedValues,
+        snapshotHashes,
+      );
+
+    const cachedReport = matchingEntry?.value as AutoStepReport;
+
+    if (cachedReport && cachedReport.plan && cachedReport.plan.thoughts) {
+      logger.labeled("CACHE").info("Using cached analysis result");
+
+      const formattedThoughts = parseFormattedText(cachedReport.plan.thoughts);
+      logger.labeled("THOUGHTS").info(...formattedThoughts);
+
+      const hasReviews =
+        cachedReport.review && Object.keys(cachedReport.review).length > 0;
+      if (hasReviews && reviewSectionTypes && cachedReport.review) {
+        this.logReviews(
+          cachedReport.screenDescription,
+          cachedReport.review,
+          reviewSectionTypes,
+        );
+      }
+    }
+
+    return cachedReport;
   }
 }

@@ -3,62 +3,94 @@ import {
   PreviousStep,
   ScreenCapturerResult,
   TestingFrameworkAPICatalogCategory,
+  AutoReviewSectionConfig,
 } from "@/types";
+import { TestContext } from "@/common/testContext";
 import { PilotError } from "@/errors/PilotError";
 import { StepPerformer } from "@/performers/step-performer/StepPerformer";
-import { StepPerformerCacheHandler } from "@/performers/step-performer/StepPerformerCacheHandler";
+import { CacheHandler } from "@/common/cacheHandler/CacheHandler";
 import { AutoPerformer } from "@/performers/auto-performer/AutoPerformer";
 import { AutoPerformerPromptCreator } from "@/performers/auto-performer/AutoPerformerPromptCreator";
 import { AutoReport } from "@/types/auto";
 import { StepPerformerPromptCreator } from "@/performers/step-performer/StepPerformerPromptCreator";
-import { APISearchPromptCreator } from "@/common/prompts/APISearchPromptCreator";
-import { ViewAnalysisPromptCreator } from "@/common/prompts/ViewAnalysisPromptCreator";
 import { CodeEvaluator } from "@/common/CodeEvaluator";
 import { SnapshotComparator } from "@/common/snapshot/comparator/SnapshotComparator";
 import { SnapshotManager } from "@/common/snapshot/SnapshotManager";
 import { ScreenCapturer } from "@/common/snapshot/ScreenCapturer";
 import downscaleImage from "@/common/snapshot/downscaleImage";
+import logger from "@/common/logger";
 
 /**
  * The main Pilot class that provides AI-assisted testing capabilities for a given underlying testing framework.
- * @note Originally, this class is designed to work with Detox, but it can be extended to work with other frameworks.
+ * Enables writing tests in natural language that are translated into precise testing actions.
+ *
+ * Usage:
+ * ```typescript
+ * const pilot = new Pilot({
+ *   frameworkDriver: new PuppeteerFrameworkDriver(),
+ *   promptHandler: new OpenAIHandler({ apiKey: process.env.OPENAI_API_KEY })
+ * });
+ *
+ * pilot.start();
+ * await pilot.perform('Navigate to the login page');
+ * await pilot.perform('Enter "user@example.com" in the email field');
+ * pilot.end();
+ * ```
  */
 export class Pilot {
-  // Singleton instance of Pilot
-  static instance?: Pilot;
-
   private readonly snapshotManager: SnapshotManager;
   private previousSteps: PreviousStep[] = [];
   private stepPerformerPromptCreator: StepPerformerPromptCreator;
   private stepPerformer: StepPerformer;
-  private cacheHandler: StepPerformerCacheHandler;
+  private cacheHandler: CacheHandler;
   private running: boolean = false;
   private autoPerformer: AutoPerformer;
   private screenCapturer: ScreenCapturer;
+  private snapshotComparator: SnapshotComparator;
+  private testContext: TestContext;
 
-  private constructor(config: Config) {
+  constructor(config: Config) {
+    // Create test context with defaults handled internally
+    this.testContext = new TestContext(config.testContext);
+
+    // Configure the logger with our test context
+    logger.setTestContext(this.testContext);
+
+    // Configure logger delegate if provided
+    if (config.loggerDelegate) {
+      logger.setDelegate(config.loggerDelegate);
+    }
+
+    this.snapshotComparator = new SnapshotComparator();
+
     this.snapshotManager = new SnapshotManager(
       config.frameworkDriver,
-      new SnapshotComparator(),
+      this.snapshotComparator,
       downscaleImage,
     );
 
-    this.cacheHandler = new StepPerformerCacheHandler();
+    this.cacheHandler = new CacheHandler(
+      this.snapshotComparator,
+      this.testContext,
+      config.options?.cacheOptions,
+    );
     this.stepPerformerPromptCreator = new StepPerformerPromptCreator(
       config.frameworkDriver.apiCatalog,
+    );
+
+    this.screenCapturer = new ScreenCapturer(
+      this.snapshotManager,
+      config.promptHandler,
     );
 
     this.stepPerformer = new StepPerformer(
       config.frameworkDriver.apiCatalog.context,
       this.stepPerformerPromptCreator,
-      new APISearchPromptCreator(config.frameworkDriver.apiCatalog),
-      new ViewAnalysisPromptCreator(config.frameworkDriver.apiCatalog),
       new CodeEvaluator(),
       config.promptHandler,
       this.cacheHandler,
-      new SnapshotComparator(),
-      config.options?.cacheMode,
-      config.options?.analysisMode,
+      this.snapshotComparator,
+      this.screenCapturer,
     );
 
     this.screenCapturer = new ScreenCapturer(
@@ -71,45 +103,9 @@ export class Pilot {
       this.stepPerformer,
       config.promptHandler,
       this.screenCapturer,
+      this.cacheHandler,
+      this.snapshotComparator,
     );
-  }
-
-  /**
-   * Gets the singleton instance of Pilot.
-   * @returns The Pilot instance.
-   */
-  public static getInstance(): Pilot {
-    if (!Pilot.instance) {
-      throw new PilotError(
-        "Pilot has not been initialized. Please call the `init()` method before using it.",
-      );
-    }
-
-    return Pilot.instance;
-  }
-
-  /**
-   * Initializes Pilot with the provided configuration.
-   * Must be called before using any other methods.
-   * @param config The configuration options for Pilot.
-   * @throws Error if called multiple times
-   */
-  public static init(config: Config): void {
-    if (Pilot.instance) {
-      throw new PilotError(
-        "Pilot has already been initialized. Please call the `init()` method only once.",
-      );
-    }
-
-    Pilot.instance = new Pilot(config);
-  }
-
-  /**
-   * Checks if Pilot has been properly initialized.
-   * @returns true if initialized, false otherwise
-   */
-  public static isInitialized(): boolean {
-    return !!Pilot.instance;
   }
 
   /**
@@ -125,7 +121,8 @@ export class Pilot {
   }
 
   /**
-   * Starts Pilot by clearing the previous steps and temporary cache.
+   * Starts a new test flow session.
+   * Must be called before any test operations to ensure a clean state, as Pilot uses operation history for context.
    */
   public start(): void {
     if (this.running) {
@@ -136,14 +133,15 @@ export class Pilot {
 
     this.running = true;
     this.previousSteps = [];
+
     this.cacheHandler.clearTemporaryCache();
   }
 
   /**
-   * Ends the Pilot test flow and optionally saves the temporary cache to the main cache.
-   * @param isCacheDisabled If true, temporary cache data won't be persisted
+   * Ends the current test flow session and handles cache management.
+   * @param shouldSaveInCache - If true, the current test flow will be saved in cache (default: true)
    */
-  public end(isCacheDisabled = false): void {
+  public end(shouldSaveInCache = true): void {
     if (!this.running) {
       throw new PilotError(
         "Pilot is not running. Please call the `start()` method before ending the test flow.",
@@ -152,13 +150,27 @@ export class Pilot {
 
     this.running = false;
 
-    if (!isCacheDisabled) this.cacheHandler.flushTemporaryCache();
+    if (shouldSaveInCache) this.cacheHandler.flushTemporaryCache();
   }
 
   /**
-   * Enriches the API catalog by adding the provided categories and JS context.
-   * @param categories - The categories to register.
-   * @param context - (Optional) Additional JS context to register.
+   * Extends the testing framework's API capabilities.
+   * @param categories - Additional API categories to add
+   * @param context - Testing framework variables to expose (optional)
+   * @example
+   * pilot.extendAPICatalog([
+   *   {
+   *     title: 'Custom Actions',
+   *     items: [
+   *       {
+   *         signature: 'customAction(param: string)',
+   *         description: 'Performs a custom action',
+   *         example: 'await customAction("param")',
+   *         guidelines: ['Use this action for specific test scenarios']
+   *       }
+   *     ]
+   *   }
+   * ], { customAction });
    */
   extendAPICatalog(
     categories: TestingFrameworkAPICatalogCategory[],
@@ -169,15 +181,25 @@ export class Pilot {
   }
 
   /**
-   * Performs a single test step using the provided intent.
-   * @param step The intent describing the test step to perform.
-   * @returns The result of the test step.
+   * Performs one or more test steps using the provided intents.
+   * @param steps The intents describing the test steps to perform.
+   * @returns The result of the last executed step.
    */
-  async performStep(step: string): Promise<any> {
+  async perform(...steps: string[]): Promise<any> {
+    this.loadCache();
+
+    let result;
+    for await (const step of steps) {
+      result = await this.performStep(step);
+    }
+    return result;
+  }
+
+  private async performStep(step: string): Promise<any> {
     this.assertIsRunning();
 
     const screenCapture: ScreenCapturerResult =
-      await this.screenCapturer.capture();
+      await this.screenCapturer.capture(true);
 
     const { code, result } = await this.stepPerformer.perform(
       step,
@@ -203,10 +225,22 @@ export class Pilot {
   /**
    * Performs an entire test flow using the provided goal.
    * @param goal A string which describes the flow should be executed.
+   * @param reviewConfigs Optional review types to include in the autopilot report.
    * @returns pilot report with info about the actions thoughts etc ...
    */
-  async autopilot(goal: string): Promise<AutoReport> {
+  async autopilot(
+    goal: string,
+    reviewConfigs?: AutoReviewSectionConfig[],
+  ): Promise<AutoReport> {
+    this.loadCache();
     this.assertIsRunning();
-    return await this.autoPerformer.perform(goal);
+    return await this.autoPerformer.perform(goal, reviewConfigs);
+  }
+
+  /**
+   * Loads the cache from the cache file.
+   */
+  private loadCache(): void {
+    this.cacheHandler.loadCacheFromFile();
   }
 }

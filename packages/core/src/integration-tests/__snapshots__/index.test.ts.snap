@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pilot Integration Tests Caching Behavior should add error and not add result for next perform step 1`] = `
+"# Test Code Generation
+
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
+
+## Context
+
+### Intent to perform
+
+Generate the minimal executable code to perform the following intent: "Tap on a non-existent button"
+
+### View hierarchy
+
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
+\`\`\`
+<view><button>Login</button></view>
+\`\`\`
+
+### Snapshot image
+
+A snapshot image is attached for visual reference.
+
+### Previous steps
+
+#### Step 1
+- Intent: "Tap on a non-existent button"
+- Generated code:
+\`\`\`
+throw new Error("Element not found");
+\`\`\`
+- Error occurred in your previous attempt. Try another approach to perform this step. Error message:
+\`\`\`
+Element not found
+\`\`\`
+
+
+## Available Testing Framework API
+
+
+## Instructions
+
+Your task is to generate the minimal executable code to perform the following intent: "Tap on a non-existent button". The code should include appropriate synchronization using the testing framework's wait methods to ensure reliable test execution. You must provide TWO separate outputs: the main executable code in <CODE></CODE> tags, and element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags.
+
+Please follow these steps carefully:
+
+1. Analyze the provided intent, the view hierarchy, and the snapshot image to understand the required action.
+2. Determine if the intent can be fully validated visually using the snapshot image.
+3. If the intent can be visually analyzed and passes the visual check, return only comments explaining the successful visual assertion.
+4. If the visual assertion fails, return code that throws an informative error explaining the failure, inside <CODE></CODE> block.
+5. If visual validation is not possible, proceed to generate the minimal executable code required to perform the intent.
+6. When generating code, you MUST provide TWO separate outputs:
+7.   a) Main executable code inside <CODE></CODE> block - this performs the actual intent
+8.   b) Element validation code inside <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> block - this verifies elements exist
+9. The validation matcher should verify the existence of elements that will be interacted with in the main code. Do NOT put the validation matcher inside the <CODE> block.
+10. Include appropriate synchronization in your main code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+11. The validation matcher will be cached and used in future test runs to quickly verify that the page is in the expected state before executing the main test logic.
+12. Assess the positions of elements within the screen layout. Ensure that tests accurately reflect their intended locations, such as whether an element is centered or positioned relative to others.
+13. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+14. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+15. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+16. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+17. Provide your outputs in the correct format: <CODE></CODE> for main executable code, and <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> for element validation (when applicable).
+18. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+
+### Verify the prompt
+
+Before generating the code, please review the provided context and instructions to ensure they are clear and unambiguous. If you encounter any issues or have questions, please throw an informative error explaining the problem.
+
+### Examples
+
+#### Example of throwing an informative error:
+<CODE>
+throw new Error("Unable to find the 'Submit' button element in the current context.");
+</CODE>
+
+#### Example of correct output format with both code and validation matcher. Do **not** nest one tag inside another. Each tagged block must be separate and self-contained.
+
+**Main executable code:**
+<CODE>
+const submitButton = await element(by.id('submit-btn'));
+await submitButton.tap();
+</CODE>
+
+**Element validation matcher (separate from main code):**
+<CACHE_VALIDATION_MATCHER>
+const page = getCurrentPage(); const submitButton = await findElement(page, {id: 'submit-btn'}) ?? (() => { throw new Error('Submit button not found'); })();
+</CACHE_VALIDATION_MATCHER>
+
+#### Visual validation using the snapshot:
+\`\`\`typescript
+// Visual assertion passed based on the snapshot image.
+\`\`\`
+
+Please provide your code below:"
+`;

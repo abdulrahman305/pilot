@@ -1,15 +1,36 @@
 export type ElementCategory =
   | "button"
-  | "link"
   | "input"
-  | "list"
   | "table"
   | "header"
-  | "semantic";
+  | "semantic"
+  | "scrollable"
+  | "draggable";
 
-export interface ElementHandle {
-  // Optional: Define common methods if needed
-}
+export type CandidateScore = {
+  candidate: HTMLElement | null;
+  errorScore: number;
+};
+
+export type HighlightItem = {
+  outlineDiv: HTMLDivElement;
+  label: HTMLDivElement;
+  boundingRect: DOMRect;
+  zIndex: number;
+};
+
+export type CandidateToBeMarked = {
+  element: HTMLElement;
+  category: ElementCategory;
+  center: [number, number];
+  zIndex: number;
+  area: number;
+};
+
+export type Rect = {
+  x: number;
+  y: number;
+};
 
 export interface Page {
   evaluate<T = any>(
@@ -23,6 +44,11 @@ export interface Page {
     url?: string;
     type?: string;
   }): Promise<any>;
+
+  evaluateHandle<T = any>(
+    pageFunction: string | ((...args: any[]) => T | Promise<T>),
+    ...args: any[]
+  ): Promise<any>;
 
   screenshot(options?: {
     path?: string;

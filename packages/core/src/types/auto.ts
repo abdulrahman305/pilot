@@ -1,9 +1,16 @@
-/** Review section types */
-export type AutoReviewSectionType = "ux" | "a11y" | "i18n";
+/** Autopilot review section config */
+export type AutoReviewSectionConfig = {
+  /** Title of the review section */
+  title: string;
+  /** Description of the review section for the prompt creation */
+  description: string;
+  /** Guidelines for the review section for prompt creation*/
+  guidelines: string[];
+};
 
 /** Complete Autopilot review */
 export type AutoReview = {
-  [key in AutoReviewSectionType]?: AutoReviewSection;
+  [reviewType: string]: AutoReviewSection;
 };
 
 /**
@@ -49,6 +56,23 @@ export type AutoStepPlan = {
 };
 
 /**
+ * Cache value for AutoPerformer.
+ * Contains all necessary data for an auto pilot step.
+ */
+export interface AutoPerformerCacheValue {
+  /** Screen description */
+  screenDescription: string;
+  /** Auto pilot step plan */
+  plan: AutoStepPlan;
+  /** Auto pilot step review */
+  review: AutoReview;
+  /** Goal achievement status */
+  goalAchieved: boolean;
+  /** Summary */
+  summary?: string;
+}
+
+/**
  * Review section content.
  */
 export type AutoReviewSection = {
@@ -57,7 +81,7 @@ export type AutoReviewSection = {
   /** Specific observations */
   findings?: string[];
   /** Numerical rating (1-10) */
-  score: string;
+  score?: string;
 };
 
 /**
@@ -70,4 +94,6 @@ export type AutoPreviousStep = {
   step: string;
   /** Optional reviews */
   review?: AutoReview;
+  /** Error */
+  error?: any;
 };

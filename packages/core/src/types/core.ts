@@ -1,92 +1,34 @@
-import {
-  TestingFrameworkDriver,
-  TestingFrameworkAPICatalogCategory,
-} from "@/types/framework";
+import { TestingFrameworkDriver } from "@/types/framework";
 import { PromptHandler } from "@/types/prompt";
-import { AutoReport } from "@/types/auto";
 
 /**
- * Core interface for interacting with the Pilot testing automation system.
+ * Configuration for test context awareness.
+ *
+ * Allows you to customize how the system detects the current test file path (for logging, cache, etc).
+ * If omitted, a default implementation is used that works with Jest and most test runners.
  */
-export interface PilotFacade {
+export interface TestContextConfig {
   /**
-   * Initializes Pilot with the provided configuration.
-   * Must be called once before using any other methods.
-   * @param config - Configuration settings for Pilot
-   * @throws Error if called multiple times
+   * Returns the absolute path to the current test file.
+   * Override this if you use a custom test runner or need special logic.
+   * If not provided, a default implementation is used.
    */
-  init: (config: Config) => void;
-
-  /**
-   * Checks if Pilot has been properly initialized.
-   * @returns true if initialized, false otherwise
-   */
-  isInitialized: () => boolean;
-
-  /**
-   * Starts a new test flow session.
-   * Must be called before any test operations to ensure a clean state,
-   * as Pilot uses operation history for context.
-   */
-  start: () => void;
-
-  /**
-   * Ends the current test flow session and handles cache management.
-   * @param isCacheDisabled - If true, temporary cache data won't be persisted (default: false)
-   */
-  end: (isCacheDisabled?: boolean) => void;
-
-  /**
-   * Executes one or more test operations in sequence.
-   * @param steps - Array of test step descriptions to perform
-   * @returns Result of the final executed step
-   * @example
-   * // Single step
-   * await perform('Tap on the login button')
-   * // Multiple steps
-   * await perform(
-   *   'Scroll down to the 7th item',
-   *   'The welcome message should be visible',
-   *   'The welcome text should be "Hello"'
-   * )
-   */
-  perform: (...steps: string[]) => Promise<string>;
-
-  /**
-   * Autonomously performs actions to achieve a specified testing goal.
-   * @param goal - Description of the desired end state or objective
-   * @returns Detailed report of actions taken and results
-   * @example
-   * await autopilot('login with user "testuser" and password "pass123"')
-   * await autopilot('complete purchase flow in "my store"')
-   */
-  autopilot: (goal: string) => Promise<AutoReport>;
-
-  /**
-   * Extends the testing framework's API capabilities.
-   * @param categories - Additional API categories to add
-   * @param context - Testing framework variables to expose
-   */
-  extendAPICatalog: (
-    categories: TestingFrameworkAPICatalogCategory[],
-    context?: any,
-  ) => void;
+  getCurrentTestFilePath?: () => string | undefined;
 }
-
-/** Cache mode settings */
-export type CacheMode = "full" | "lightweight" | "disabled";
-
-/** Analysis mode settings */
-export type AnalysisMode = "fast" | "full";
 
 /**
  * Pilot behavior configuration options.
  */
 export interface PilotOptions {
-  /** Cache mode (default: 'full') */
-  cacheMode?: CacheMode;
-  /** Analysis mode (default: 'fast') */
-  analysisMode?: AnalysisMode;
+  /** Cache options */
+  cacheOptions?: CacheOptions;
+}
+
+export interface CacheOptions {
+  /** If true, cache will be used for operations (default: true) */
+  shouldUseCache?: boolean;
+  /** If true, cache will be updated with new data (default: false) */
+  shouldOverrideCache?: boolean;
 }
 
 /**
@@ -97,8 +39,12 @@ export interface Config {
   frameworkDriver: TestingFrameworkDriver;
   /** AI service handler */
   promptHandler: PromptHandler;
+  /** Custom logger delegate implementation */
+  loggerDelegate?: import("@/types/logger").LoggerDelegate;
   /** Optional behavior settings */
   options?: PilotOptions;
+  /** Optional test runner integration. */
+  testContext?: TestContextConfig;
 }
 
 /**
@@ -110,5 +56,16 @@ export type PreviousStep = {
   /** Generated test code */
   code: string;
   /** Step execution result */
-  result: any;
+  result?: any;
+  /** Step execution error */
+  error?: any;
 };
+
+/**
+ * Cache value for StepPerformer.
+ * Contains the generated code for a step.
+ */
+export interface StepPerformerCacheValue {
+  /** Generated code */
+  code: string;
+}

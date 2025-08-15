@@ -1,0 +1,38 @@
+{
+  "name": "@wix-pilot/basewebdriver",
+  "version": "1.0.1",
+  "description": "Base web driver",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wix-incubator/pilot.git"
+  },
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "test": "echo No tests avialable for this package",
+    "test:example": "jest",
+    "release:patch": "node ../../../scripts/release-package.js patch",
+    "release:patch:alpha": "node ../../../scripts/release-package.js patch --prerelease",
+    "release:minor": "node ../../../scripts/release-package.js minor",
+    "release:minor:alpha": "node ../../../scripts/release-package.js minor --prerelease",
+    "release:major": "node ../../../scripts/release-package.js major",
+    "release:major:alpha": "node ../../../scripts/release-package.js major --prerelease",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "bugs": {
+    "url": "https://github.com/wix-incubator/pilot/issues"
+  },
+  "dependencies": {
+    "@wix-pilot/web-utils": "^2.1.0",
+    "@wix-pilot/core": "^3.4.1"
+  }
+}

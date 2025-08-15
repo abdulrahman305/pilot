@@ -9,67 +9,33 @@ sidebar_position: 1
 
 Pilot provides a simple yet powerful interface for controlling your test flows. This document covers the core API methods and configuration options.
 
-## API Methods
+## Creating a Pilot Instance
 
-### init()
+To create a Pilot instance, import the `Pilot` class and instantiate it with a configuration:
 
 ```typescript
-init(config: Config): void
-```
-
-Initializes Pilot with the provided configuration. Must be called before any other methods and only once in your test environment.
-
-:::note
-Throws an error if called multiple times.
-:::
-
-Basic initialization example:
-```typescript
-import pilot from '@wix-pilot/core';
+import { Pilot } from '@wix-pilot/core';
 import { PuppeteerFrameworkDriver } from '@wix-pilot/puppeteer';
 import { OpenAIHandler } from '<your-openai-handler>';
 
-pilot.init({
+const pilot = new Pilot({
   frameworkDriver: new PuppeteerFrameworkDriver(),
   promptHandler: new OpenAIHandler({
     apiKey: process.env.OPENAI_API_KEY
   }),
   options: {
-    cacheMode: 'full',
-    analysisMode: 'fast'
+    cacheOptions: {
+      shouldUseCache: true,
+      shouldOverrideCache: false
+    }
+  },
+  testContext: {
+    getCurrentTestFilePath: () => '/path/to/my/test.spec.ts'
   }
 });
 ```
 
-### getInstance()
-
-```typescript
-static getInstance(): Pilot
-```
-
-Gets the singleton instance of Pilot.
-
-:::note
-Throws an error if Pilot hasn't been initialized.
-:::
-
-```typescript
-const pilot = Pilot.getInstance();
-```
-
-### isInitialized()
-
-```typescript
-isInitialized(): boolean
-```
-
-Checks if Pilot has been properly initialized.
-
-```typescript
-if (!pilot.isInitialized()) {
-  pilot.init(config);
-}
-```
+## API Methods
 
 ### start()
 
@@ -114,13 +80,83 @@ const result = await pilot.perform(
 );
 ```
 
+### Using Multiple Pilot Instances
+
+You can create multiple Pilot instances to run concurrent tests with different configurations or frameworks:
+
+```typescript
+import { Pilot } from '@wix-pilot/core';
+import { PuppeteerFrameworkDriver } from '@wix-pilot/puppeteer';
+import { PlaywrightFrameworkDriver } from '@wix-pilot/playwright';
+import { OpenAIHandler } from '<your-openai-handler>';
+
+// Create instances with different drivers
+const puppeteerPilot = new Pilot({
+  frameworkDriver: new PuppeteerFrameworkDriver(),
+  promptHandler: new OpenAIHandler({
+    apiKey: process.env.OPENAI_API_KEY
+  })
+});
+
+const playwrightPilot = new Pilot({
+  frameworkDriver: new PlaywrightFrameworkDriver(),
+  promptHandler: new OpenAIHandler({
+    apiKey: process.env.OPENAI_API_KEY
+  })
+});
+
+// Use instances independently
+puppeteerPilot.start();
+playwrightPilot.start();
+
+await puppeteerPilot.perform('Navigate to the login page');
+await playwrightPilot.perform('Open the dashboard');
+
+puppeteerPilot.end();
+playwrightPilot.end();
+```
+
+:::tip When to use multiple instances
+Multiple instances are useful for running automation flows in multiple environments or with different testing frameworks.
+For example, you can use one instance for web testing with Puppeteer and another for mobile testing with Appium, or to execute operations with the same framework in parallel.
+:::
+
+### perform()
+
+```typescript
+perform(...steps: string[]): Promise<any>
+```
+
+Executes one or more test steps using natural language. Returns the result of the last executed step.
+
+:::note
+Requires an active test flow (initiated by `start()`).
+:::
+
+Examples:
+```typescript
+// Single step
+const result = await pilot.perform('Click the login button');
+
+// Multiple steps in sequence
+const result = await pilot.perform(
+  'Launch the app',
+  'Navigate to Settings',
+  'Tap on "Edit Profile"',
+  'Update username to "john_doe"',
+  'Verify changes are saved'
+);
+```
+
 ### autopilot()
 
 ```typescript
-autopilot(goal: string): Promise<AutoReport>
+autopilot(goal: string, reviewTypes?: AutoReviewSectionType[]): Promise<AutoReport>
 ```
 
 Executes an entire test flow automatically based on a high-level goal. Instead of specifying individual steps, you describe the end goal and let Pilot figure out the necessary steps.
+Additionally, you can provide Pilot with an array containing `reviewTypes`. Along with the screen description, thoughts, and actions, Pilot will generate a review based on your specifications.
+For example, a review type can be Accessibility. By providing a description and guidelines, you can receive an accessibility review tailored to your needs.
 
 :::note
 Requires an active test flow (initiated by `start()`).
@@ -137,6 +173,24 @@ const report = await pilot.autopilot(
 const report = await pilot.autopilot(
   'Update the profile username to john_doe and verify the changes'
 );
+
+// Add an accessibility review section to the report
+const reviewTypes = [{
+    title: "Accessibility",
+    emoji: "👁️",
+    description: "The Accessibility Review ensures the product is usable by people with various disabilities. This includes checking compatibility with assistive technologies, color contrast, keyboard navigation, and screen reader support.",
+    guidelines: [
+        "Verify that all text has sufficient contrast against background colors.",
+        "Ensure that interactive elements are keyboard navigable.",
+        "Check for the correct use of ARIA (Accessible Rich Internet Applications) roles and labels.",
+        "Test screen reader compatibility, ensuring that all content is understandable.",
+        "Ensure visual elements have alternative descriptions (e.g., alt text for images)."
+    ]}]
+const report = await pilot.autopilot(
+    'Update the profile username to john_doe and verify the changes',
+    reviewTypes
+);
+
 ```
 
 ### end()
@@ -190,33 +244,47 @@ pilot.extendAPICatalog([
 ### Config Interface
 
 ```typescript
+import {CacheOptions, LoggerDelegate} from "@wix-pilot/core/dist/types";
+
 interface Config {
-  /** Testing framework driver */
-  frameworkDriver: TestingFrameworkDriver;
-  /** AI service handler */
-  promptHandler: PromptHandler;
-  /** Optional behavior settings */
-  options?: PilotOptions;
+    /** Testing framework driver */
+    frameworkDriver: TestingFrameworkDriver;
+    /** AI service handler */
+    promptHandler: PromptHandler;
+    /** Custom logger delegate implementation */
+    loggerDelegate?: LoggerDelegate;
+    /** Optional behavior settings */
+    options?: PilotOptions;
+    /**
+     * Configuration for test context awareness.
+     *
+     * Allows you to customize how the system detects the current test file path (for logging, cache, etc).
+     * If omitted, a default implementation is used that works with Jest and most test runners.
+     */
+    testContext?: TestContext;
 }
 
 interface PilotOptions {
-  /** Cache mode (default: 'full') */
-  cacheMode?: CacheMode;  // 'full' | 'lightweight' | 'disabled'
-  /** Analysis mode (default: 'fast') */
-  analysisMode?: AnalysisMode;  // 'fast' | 'full'
+    /** Cache options */
+    cacheOptions?: CacheOptions;
+}
+
+interface TestContext {
+    /**
+     * Returns the absolute path to the current test file.
+     * Override this if you use a custom test runner or need special logic.
+     * If not provided, a default implementation is used.
+     */
+    getCurrentTestFilePath?: () => string | undefined;
+}
+
+interface CacheOptions {
+    /** If true, cache will be used for operations (default: true) */
+    shouldUseCache?: boolean;
+    /** If true, cache will be updated with new data (default: false) */
+    shouldOverrideCache?: boolean;
 }
 ```
-
-#### Cache Modes
-
-- **full**: Cache is used with the screen state (default)
-- **lightweight**: Cache is used but only based on steps (without screen state)
-- **disabled**: No caching is used
-
-#### Analysis Modes
-
-- **fast**: Skip API search and view hierarchy analysis preprocessing (default)
-- **full**: Perform complete analysis including API search and view hierarchy preprocessing
 
 ### Framework Driver Interface
 
@@ -249,7 +317,6 @@ interface TestingFrameworkAPICatalog {
 ## Error Handling
 
 Pilot throws errors when:
-- Attempting to initialize more than once
 - Starting a flow while another is active
 - Performing steps without an active flow
 - Ending a flow that hasn't been started
@@ -257,6 +324,13 @@ Pilot throws errors when:
 Complete flow with error handling:
 ```typescript
 try {
+  const pilot = new Pilot({
+    frameworkDriver: new PuppeteerFrameworkDriver(),
+    promptHandler: new OpenAIHandler({
+      apiKey: process.env.OPENAI_API_KEY
+    })
+  });
+  
   pilot.start();
   
   // Execute multiple steps
@@ -272,7 +346,7 @@ try {
   pilot.end();
 } catch (error) {
   // Disable cache on error
-  pilot.end(true);
+  if (pilot) pilot.end(false);
   throw error;
 }
 ```

@@ -1,4 +1,6 @@
-import { AutoPreviousStep, AutoReviewSectionType } from "@/types";
+import { AutoPreviousStep, AutoReviewSectionConfig } from "@/types";
+import { truncateString } from "@/common/prompt-utils";
+import { breakReviewArrayToItsTypes } from "@/performers/auto-performer/reviews/reviews-utils";
 
 export class AutoPerformerPromptCreator {
   constructor() {}
@@ -8,37 +10,75 @@ export class AutoPerformerPromptCreator {
     viewHierarchy: string,
     isSnapshotImageAttached: boolean,
     previousSteps: AutoPreviousStep[],
+    reviewTypes?: AutoReviewSectionConfig[],
   ): string {
-    return [
-      this.createBasePrompt(),
-      this.createContext(
-        goal,
-        viewHierarchy,
-        isSnapshotImageAttached,
-        previousSteps,
-      ),
-      this.createInstructions(goal, isSnapshotImageAttached),
-    ]
-      .flat()
-      .join("\n");
+    const reviewTypesArray = reviewTypes
+      ? breakReviewArrayToItsTypes(reviewTypes)
+      : [];
+    if (reviewTypesArray.length === 0) {
+      return [
+        this.createBasePrompt(),
+        this.createContext(
+          goal,
+          viewHierarchy,
+          isSnapshotImageAttached,
+          previousSteps,
+        ),
+        this.createInstructions(goal, isSnapshotImageAttached, undefined),
+      ]
+        .flat()
+        .join("\n");
+    } else {
+      return [
+        this.createBasePrompt(reviewTypesArray),
+        this.createContext(
+          goal,
+          viewHierarchy,
+          isSnapshotImageAttached,
+          previousSteps,
+          reviewTypes,
+        ),
+        this.createInstructions(
+          goal,
+          isSnapshotImageAttached,
+          reviewTypesArray,
+        ),
+      ]
+        .flat()
+        .join("\n");
+    }
   }
 
-  private createBasePrompt(): string[] {
-    return [
-      "# Next Step Generation and UX/Accessibility/Internationalization Reporting",
+  private createBasePrompt(reviewTypesArray?: string[]): string[] {
+    const prompt = [
+      "# Next Step Generation Reporting",
       "",
       "You are an AI assistant tasked with:",
       "",
       `1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.`,
       `   Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,`,
       `   and another string (which can be greater than one line) which describes your thoughts while creating the step.`,
-      `   If you think that the goal has been reached return a one word action 'success'`,
+      `   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. `,
+      `   If it is not possible to determine the next action, and you tried and failed, throw an error.`,
       `   If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.`,
-      "2. Creating comprehensive UX, Accessibility, and Internationalization reports that include a review, findings, and a score.",
+    ];
+
+    if (reviewTypesArray && reviewTypesArray.length > 0) {
+      const reviewTypes = reviewTypesArray.join(", ");
+      prompt[0] = `# Next Step Generation and ${reviewTypes} Reporting`;
+      prompt.push(
+        "",
+        `2. Creating comprehensive ${reviewTypes} reports that include a review, findings, and a score.`,
+      );
+    }
+
+    prompt.push(
       "",
       "Please adhere to the instructions below to provide detailed and helpful responses.",
       "",
-    ];
+    );
+
+    return prompt;
   }
 
   private createContext(
@@ -46,6 +86,7 @@ export class AutoPerformerPromptCreator {
     viewHierarchy: string,
     isSnapshotImageAttached: boolean,
     previousSteps: AutoPreviousStep[],
+    reviewTypes?: AutoReviewSectionConfig[],
   ): string[] {
     const context = [
       "## Context",
@@ -88,14 +129,12 @@ export class AutoPerformerPromptCreator {
               `- Intent: "${previousStep.step}"`,
             ];
 
-            if (previousStep.review) {
-              for (const sectionType of Object.keys(
-                previousStep.review,
-              ) as AutoReviewSectionType[]) {
-                const sectionReview = previousStep.review[sectionType];
+            if (previousStep.review && reviewTypes) {
+              for (const sectionType of reviewTypes) {
+                const sectionReview = previousStep.review[sectionType.title];
                 if (sectionReview) {
                   stepDetails.push(
-                    `- ${this.getSectionName(sectionType)} Review:`,
+                    `- ${sectionType.title} Review:`,
                     `  - Summary: ${sectionReview.summary}`,
                   );
                   if (sectionReview.findings?.length) {
@@ -110,8 +149,14 @@ export class AutoPerformerPromptCreator {
                 }
               }
             }
+            const error = this.isPreviousStepError(
+              previousStep,
+              index === previousSteps.length - 1,
+            );
+            !!error && stepDetails.push(error);
 
             stepDetails.push("");
+
             return stepDetails;
           })
           .flat(),
@@ -122,22 +167,10 @@ export class AutoPerformerPromptCreator {
     return context;
   }
 
-  private getSectionName(sectionType: AutoReviewSectionType): string {
-    switch (sectionType) {
-      case "ux":
-        return "UX";
-      case "a11y":
-        return "Accessibility";
-      case "i18n":
-        return "Internationalization";
-      default:
-        throw new Error(`Invalid review section: ${sectionType}`);
-    }
-  }
-
   private createInstructions(
     goal: string,
     isSnapshotImageAttached: boolean,
+    reviewTypesArray: string[] | undefined,
   ): string[] {
     return [
       "## Instructions",
@@ -148,13 +181,16 @@ export class AutoPerformerPromptCreator {
       "",
       `2. **Thought Process**: Provide a detailed description (which can be more than one line) of your thought process while determining the next action.`,
       "",
-      `3. **Review Reports**: Create comprehensive review reports for each applicable section (e.g., UX, Accessibility, Internationalization) that include a summary, findings, and a score.`,
+      reviewTypesArray
+        ? `3. **Review Reports**: Create comprehensive review reports for each applicable section (e.g., ${reviewTypesArray.join(", ")}) that include a summary, findings, and a score.`
+        : "",
       "",
       "### Please follow these steps carefully:",
       "",
-      ...this.createStepByStepInstructions(isSnapshotImageAttached).map(
-        (instruction, index) => `${index + 1}. ${instruction}`,
-      ),
+      ...this.createStepByStepInstructions(
+        isSnapshotImageAttached,
+        reviewTypesArray,
+      ).map((instruction, index) => `${index + 1}. ${instruction}`),
       "",
       "### Verify the Prompt",
       "",
@@ -163,106 +199,54 @@ export class AutoPerformerPromptCreator {
       "",
       "### Examples for Answer Formats",
       "",
+      `Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain ${reviewTypesArray?.join(", ")} open and close tags.`,
+      "",
       "#### Next Action with Thoughts:",
       "",
       `<SCREENDESCRIPTION>
-Registration Page.
+Products Catalog Page
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To complete the registration process, tapping on the 'Submit' button is necessary.
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
 </THOUGHTS>
 <ACTION>
-Tap on the 'Submit' button, which has the ID 'btn_submit' and is located at the bottom of the registration form.
+Tap on the 'Add to Cart' button beneath the red dress product
 </ACTION>
 
-<UX>
-<SUMMARY>
-The 'Submit' button (ID: btn_submit) may not be clearly visible to users, potentially hindering the registration process.
-</SUMMARY>
-<FINDINGS>
-  - The button is positioned below multiple input fields, requiring excessive scrolling - Position the 'Submit' button prominently or make it sticky on the screen.
-  - It uses a color that blends with the background - Use a contrasting color to make the button stand out.
-  - The button label uses a small font size, which may be hard to read - Increase the font size of the label to improve readability.
-</FINDINGS>
-<SCORE>
-6/10
-</SCORE>
-</UX>
-<ACCESSIBILITY>
-<SUMMARY>
-The 'Submit' button (ID: btn_submit) lacks essential accessibility features.
-</SUMMARY>
-<FINDINGS>
-  - Missing 'aria-label' or accessible name for screen readers. - Add an 'aria-label' with an appropriate description.
-  - The touch target size is smaller than recommended. - Increase the touch target size to at least 44x44 pixels.
-  - The contrast ratio between the text and background is insufficient. - Adjust colors to meet contrast ratio guidelines.
-</FINDINGS>
-<SCORE>
-5/10
-</SCORE>
-</ACCESSIBILITY>
-<INTERNATIONALIZATION>
-<SUMMARY>
-The 'Submit' button may not be properly localized for all supported languages.
-</SUMMARY>
-<FINDINGS>
-  - The button text is hard-coded in English - Use localization files to support multiple languages.
-  - Layout may break for languages with longer text strings - Ensure dynamic resizing or text wrapping is implemented.
-  - Missing support for right-to-left languages - Adjust layout to support RTL languages where necessary.
-</FINDINGS>
-<SCORE>
-4/10
-</SCORE>
-</INTERNATIONALIZATION>`,
+${reviewTypesArray ? this.generateReviewSections(reviewTypesArray) : ""}`,
 
       "",
-      "#### Example of Success:",
+      "#### Intermediate Step - Cart Notification:",
       "",
       `<SCREENDESCRIPTION>
-Goal Page Name.
+Product Added Notification Overlay
 </SCREENDESCRIPTION>
 <THOUGHTS>
-All actions required to achieve the goal have been completed successfully.
-<SUMMARY>
-An overall summary of the actions taken and reviews conducted during the previous steps.
-</SUMMARY>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
 </THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   ${reviewTypesArray ? this.generateReviewSections(reviewTypesArray) : ""}`,
+
+      "",
+      "#### Example of Success - Validation Complete:",
+      "",
+      `<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
 <ACTION>
 success
 </ACTION>
-<UX>
-<SUMMARY>
-An overall UX review summary based on the previous steps' reviews.
-</SUMMARY>
-<FINDINGS>
-  - Summary of UX findings from previous steps.
-</FINDINGS>
-<SCORE>
-7/10 - This is an overall score for the entire flow.
-</SCORE>
-</UX>
-<ACCESSIBILITY>
-<SUMMARY>
-An overall accessibility review summary based on the previous steps' reviews.
-</SUMMARY>
-<FINDINGS>
-  - Summary of accessibility findings from previous steps.
-</FINDINGS>
-<SCORE>
-6/10 - This is an overall score for the entire flow.
-</SCORE>
-</ACCESSIBILITY>
-<INTERNATIONALIZATION>
-<SUMMARY>
-An overall internationalization review summary based on the previous steps' reviews.
-</SUMMARY>
-<FINDINGS>
-  - Summary of internationalization findings from previous steps.
-</FINDINGS>
-<SCORE>
-5/10 - This is an overall score for the entire flow.
-</SCORE>
-</INTERNATIONALIZATION>`,
+
+${reviewTypesArray ? this.generateReviewSections(reviewTypesArray) : ""}`,
 
       "",
       "#### Additional Example:",
@@ -271,48 +255,13 @@ An overall internationalization review summary based on the previous steps' revi
 User Profile Screen.
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To view the user profile, selecting the 'Profile' icon (ID: icon_profile) is required.
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
 </THOUGHTS>
 <ACTION>
 Select the 'Profile' icon (ID: icon_profile)
 </ACTION>
-<UX>
-<SUMMARY>
-The 'Profile' icon (ID: icon_profile) might not be immediately recognized by all users.
-</SUMMARY>
-<FINDINGS>
-  - Uses an uncommon symbol instead of the standard user silhouette - Replace with the standard user silhouette icon.
-  - Lacks a text label, which may confuse some users - Add a text label or tooltip that says 'Profile'.
-</FINDINGS>
-<SCORE>
-5/10
-</SCORE>
-</UX>
-<ACCESSIBILITY>
-<SUMMARY>
-The 'Profile' icon (ID: icon_profile) has accessibility issues that could affect users with disabilities.
-</SUMMARY>
-<FINDINGS>
-  - No 'aria-label' provided for screen readers - Add an 'aria-label' with the text 'User Profile'.
-  - The icon is not reachable via keyboard navigation - Ensure the icon can be focused and activated via keyboard.
-</FINDINGS>
-<SCORE>
-4/10
-</SCORE>
-</ACCESSIBILITY>
-<INTERNATIONALIZATION>
-<SUMMARY>
-The 'Profile' icon may not be properly adapted for different locales.
-</SUMMARY>
-<FINDINGS>
-  - Iconography may not be universally recognized - Consider using culturally neutral icons.
-  - No localization for the tooltip text - Ensure tooltips and labels are localized.
-  - Date and time formats on the profile screen may not match user locale - Use locale-aware date and time formats.
-</FINDINGS>
-<SCORE>
-6/10
-</SCORE>
-</INTERNATIONALIZATION>`,
+
+${reviewTypesArray ? this.generateReviewSections(reviewTypesArray) : ""}`,
 
       "",
       "#### Example of Throwing an Informative Error:",
@@ -327,21 +276,71 @@ The 'Profile' icon may not be properly adapted for different locales.
 
   private createStepByStepInstructions(
     isSnapshotImageAttached: boolean,
+    reviewTypesArray: string[] | undefined,
   ): string[] {
     const steps = [
       "Analyze the provided goal, view hierarchy, and previous steps to understand the user's progress and available actions.",
       "Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').",
       `Consider the elements present in the view hierarchy${isSnapshotImageAttached ? " and the snapshot image" : ""} to determine possible next actions.`,
       "Determine the optimal next action the user should take to move closer to their goal.",
+      "Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.",
       "Ensure the action is directly related to available elements in the view hierarchy.",
       "Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.",
       "Generate a one-line string that precisely describes this next action, enclosed within `<ACTION>` tags.",
-      "Provide a detailed description of your thought process enclosed within `<THOUGHTS>` tags.",
-      "If the goal is achieved, add a `<SUMMARY>` block inside the `<THOUGHTS>` section, summarizing the overall flow and findings. Also, provide comprehensive overall UX, Accessibility, and Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.",
-      "For each applicable review section (`UX`, `Accessibility`, `Internationalization`), create a comprehensive report enclosed within corresponding tags (e.g., `<UX>`, `<ACCESSIBILITY>`, `<INTERNATIONALIZATION>`), including a summary, findings, and a score out of 10.",
-      "Ensure each section is clearly labeled and formatted as shown in the examples.",
-      "If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.",
+      "Provide a detailed description of your thought process enclosed within `<THOUGHTS>` tags. Within your thoughts, you can use simple formatting:",
+      "  - Regular text will be displayed in gray (default color)",
+      "  - *Text between single asterisks* will be displayed in white",
+      "  - **Text between double asterisks** will be displayed bold in gray",
+      "  - ***Text between triple asterisks*** will be displayed bold in white",
+      "If the goal is achieved, add a separate `<GOAL_SUMMARY>` block after the `<THOUGHTS>` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.",
     ];
+    if (reviewTypesArray) {
+      const reviewTypes = reviewTypesArray.join(", ");
+      steps.push(
+        `Also, provide comprehensive overall ${reviewTypes} reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.`,
+        `For each applicable review section (${reviewTypes}), create a comprehensive report enclosed within corresponding tags (e.g., <UX>, <ACCESSIBILITY>, <INTERNATIONALIZATION>), including a summary, findings, and a score out of 10.`,
+        "Ensure each section is clearly labeled and formatted as shown in the examples.",
+        "You can use the same formatting syntax in your review summaries and findings:",
+        "  - Regular text will be displayed in gray (default color)",
+        "  - *Text between single asterisks* will be displayed in white",
+        "  - **Text between double asterisks** will be displayed bold in gray",
+        "  - ***Text between triple asterisks*** will be displayed bold in white",
+        "This will help highlight important aspects of your reviews.",
+        "If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.",
+      );
+    }
+
     return steps;
+  }
+
+  private isPreviousStepError(
+    previousStep: AutoPreviousStep,
+    isMostPreviousStep: boolean,
+  ): string | undefined {
+    if (previousStep.error && isMostPreviousStep) {
+      const truncatedError = truncateString(previousStep.error);
+      return `- Error occurred in your previous attempt. Try another approach to perform this step. Error message:\n\`\`\`\n${truncatedError}\n\`\`\``;
+    }
+    return undefined;
+  }
+
+  private generateReviewSections(reviewTypesArray: string[]): string {
+    return reviewTypesArray
+      .map(
+        (reviewType) => `<${reviewType.toUpperCase()}>
+<SUMMARY>
+The product catalog page has some ***${reviewType.toLowerCase()} considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ${reviewType.toLowerCase()} improvements.
+</SCORE>
+</${reviewType.toUpperCase()}>`,
+      )
+      .join("\n\n");
   }
 }

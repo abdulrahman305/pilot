@@ -79,6 +79,9 @@ web_modules/
 .env.production.local
 .env.local
 
+# npmrc file
+.npmrc
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -144,9 +147,3 @@ dist
 # OS files
 .DS_Store
 Thumbs.db
-
-# Cache files
-**/*/wix_pilot_cache.json
-
-# Legacy cache files
-**/*/detox_copilot_cache.json

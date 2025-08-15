@@ -1,10 +1,565 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PromptCreator CACHE_VALIDATION_MATCHER behavior should NOT include CACHE_VALIDATION_MATCHER instructions when no snapshot is attached 1`] = `
+"# Test Code Generation
+
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
+
+## Context
+
+### Intent to perform
+
+Generate the minimal executable code to perform the following intent: "tap submit button"
+
+### View hierarchy
+
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot image
+
+No snapshot image is attached for this intent.
+
+## Available Testing Framework API
+
+### Actions
+
+#### tap(element: Element)
+
+Taps on the specified element.
+
+##### Example
+
+\`\`\`
+await element(by.id("button")).tap();
+\`\`\`
+
+##### Guidelines
+
+- Ensure the element is tappable before using this method.
+
+#### typeText(element: Element, text: string)
+
+Types the specified text into the element.
+
+##### Example
+
+\`\`\`
+await element(by.id("input")).typeText("Hello, World!");
+\`\`\`
+
+##### Guidelines
+
+- Use this method only on text input elements.
+
+### Assertions
+
+#### toBeVisible()
+
+Asserts that the element is visible on the screen.
+
+##### Example
+
+\`\`\`
+await expect(element(by.id("title"))).toBeVisible();
+\`\`\`
+
+##### Guidelines
+
+- Consider scroll position when using this assertion.
+
+### Matchers
+
+#### by.id(id: string)
+
+Matches elements by their ID attribute.
+
+##### Example
+
+\`\`\`
+element(by.id("uniqueId"))
+\`\`\`
+
+##### Guidelines
+
+- Use unique IDs for elements to avoid conflicts, combine with atIndex() if necessary.
+
+## Instructions
+
+Your task is to generate the minimal executable code to perform the following intent: "tap submit button".
+
+Please follow these steps carefully:
+
+1. Analyze the provided intent and the view hierarchy to understand the required action.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+
+### Verify the prompt
+
+Before generating the code, please review the provided context and instructions to ensure they are clear and unambiguous. If you encounter any issues or have questions, please throw an informative error explaining the problem.
+
+### Examples
+
+#### Example of throwing an informative error:
+<CODE>
+throw new Error("Unable to find the 'Submit' button element in the current context.");
+</CODE>
+
+Please provide your code below:"
+`;
+
+exports[`PromptCreator CACHE_VALIDATION_MATCHER behavior should include CACHE_VALIDATION_MATCHER instructions when snapshot is attached 1`] = `
+"# Test Code Generation
+
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
+
+## Context
+
+### Intent to perform
+
+Generate the minimal executable code to perform the following intent: "tap submit button"
+
+### View hierarchy
+
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot image
+
+A snapshot image is attached for visual reference.
+
+## Available Testing Framework API
+
+### Actions
+
+#### tap(element: Element)
+
+Taps on the specified element.
+
+##### Example
+
+\`\`\`
+await element(by.id("button")).tap();
+\`\`\`
+
+##### Guidelines
+
+- Ensure the element is tappable before using this method.
+
+#### typeText(element: Element, text: string)
+
+Types the specified text into the element.
+
+##### Example
+
+\`\`\`
+await element(by.id("input")).typeText("Hello, World!");
+\`\`\`
+
+##### Guidelines
+
+- Use this method only on text input elements.
+
+### Assertions
+
+#### toBeVisible()
+
+Asserts that the element is visible on the screen.
+
+##### Example
+
+\`\`\`
+await expect(element(by.id("title"))).toBeVisible();
+\`\`\`
+
+##### Guidelines
+
+- Consider scroll position when using this assertion.
+
+### Matchers
+
+#### by.id(id: string)
+
+Matches elements by their ID attribute.
+
+##### Example
+
+\`\`\`
+element(by.id("uniqueId"))
+\`\`\`
+
+##### Guidelines
+
+- Use unique IDs for elements to avoid conflicts, combine with atIndex() if necessary.
+
+## Instructions
+
+Your task is to generate the minimal executable code to perform the following intent: "tap submit button". The code should include appropriate synchronization using the testing framework's wait methods to ensure reliable test execution. You must provide TWO separate outputs: the main executable code in <CODE></CODE> tags, and element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags.
+
+Please follow these steps carefully:
+
+1. Analyze the provided intent, the view hierarchy, and the snapshot image to understand the required action.
+2. Determine if the intent can be fully validated visually using the snapshot image.
+3. If the intent can be visually analyzed and passes the visual check, return only comments explaining the successful visual assertion.
+4. If the visual assertion fails, return code that throws an informative error explaining the failure, inside <CODE></CODE> block.
+5. If visual validation is not possible, proceed to generate the minimal executable code required to perform the intent.
+6. When generating code, you MUST provide TWO separate outputs:
+7.   a) Main executable code inside <CODE></CODE> block - this performs the actual intent
+8.   b) Element validation code inside <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> block - this verifies elements exist
+9. The validation matcher should verify the existence of elements that will be interacted with in the main code. Do NOT put the validation matcher inside the <CODE> block.
+10. Include appropriate synchronization in your main code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+11. The validation matcher will be cached and used in future test runs to quickly verify that the page is in the expected state before executing the main test logic.
+12. Assess the positions of elements within the screen layout. Ensure that tests accurately reflect their intended locations, such as whether an element is centered or positioned relative to others.
+13. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+14. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+15. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+16. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+17. Provide your outputs in the correct format: <CODE></CODE> for main executable code, and <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> for element validation (when applicable).
+18. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+
+### Verify the prompt
+
+Before generating the code, please review the provided context and instructions to ensure they are clear and unambiguous. If you encounter any issues or have questions, please throw an informative error explaining the problem.
+
+### Examples
+
+#### Example of throwing an informative error:
+<CODE>
+throw new Error("Unable to find the 'Submit' button element in the current context.");
+</CODE>
+
+#### Example of correct output format with both code and validation matcher. Do **not** nest one tag inside another. Each tagged block must be separate and self-contained.
+
+**Main executable code:**
+<CODE>
+const submitButton = await element(by.id('submit-btn'));
+await submitButton.tap();
+</CODE>
+
+**Element validation matcher (separate from main code):**
+<CACHE_VALIDATION_MATCHER>
+const page = getCurrentPage(); const submitButton = await findElement(page, {id: 'submit-btn'}) ?? (() => { throw new Error('Submit button not found'); })();
+</CACHE_VALIDATION_MATCHER>
+
+#### Visual validation using the snapshot:
+\`\`\`typescript
+// Visual assertion passed based on the snapshot image.
+\`\`\`
+
+Please provide your code below:"
+`;
+
+exports[`PromptCreator Framework-specific references should use generic references when no framework name is provided 1`] = `
+"# Test Code Generation
+
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
+
+## Context
+
+### Intent to perform
+
+Generate the minimal executable code to perform the following intent: "click button"
+
+### View hierarchy
+
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot image
+
+A snapshot image is attached for visual reference.
+
+## Available Testing Framework API
+
+### Actions
+
+#### tap(element: Element)
+
+Taps on the specified element.
+
+##### Example
+
+\`\`\`
+await element(by.id("button")).tap();
+\`\`\`
+
+##### Guidelines
+
+- Ensure the element is tappable before using this method.
+
+#### typeText(element: Element, text: string)
+
+Types the specified text into the element.
+
+##### Example
+
+\`\`\`
+await element(by.id("input")).typeText("Hello, World!");
+\`\`\`
+
+##### Guidelines
+
+- Use this method only on text input elements.
+
+### Assertions
+
+#### toBeVisible()
+
+Asserts that the element is visible on the screen.
+
+##### Example
+
+\`\`\`
+await expect(element(by.id("title"))).toBeVisible();
+\`\`\`
+
+##### Guidelines
+
+- Consider scroll position when using this assertion.
+
+### Matchers
+
+#### by.id(id: string)
+
+Matches elements by their ID attribute.
+
+##### Example
+
+\`\`\`
+element(by.id("uniqueId"))
+\`\`\`
+
+##### Guidelines
+
+- Use unique IDs for elements to avoid conflicts, combine with atIndex() if necessary.
+
+## Instructions
+
+Your task is to generate the minimal executable code to perform the following intent: "click button". The code should include appropriate synchronization using the testing framework's wait methods to ensure reliable test execution. You must provide TWO separate outputs: the main executable code in <CODE></CODE> tags, and element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags.
+
+Please follow these steps carefully:
+
+1. Analyze the provided intent, the view hierarchy, and the snapshot image to understand the required action.
+2. Determine if the intent can be fully validated visually using the snapshot image.
+3. If the intent can be visually analyzed and passes the visual check, return only comments explaining the successful visual assertion.
+4. If the visual assertion fails, return code that throws an informative error explaining the failure, inside <CODE></CODE> block.
+5. If visual validation is not possible, proceed to generate the minimal executable code required to perform the intent.
+6. When generating code, you MUST provide TWO separate outputs:
+7.   a) Main executable code inside <CODE></CODE> block - this performs the actual intent
+8.   b) Element validation code inside <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> block - this verifies elements exist
+9. The validation matcher should verify the existence of elements that will be interacted with in the main code. Do NOT put the validation matcher inside the <CODE> block.
+10. Include appropriate synchronization in your main code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+11. The validation matcher will be cached and used in future test runs to quickly verify that the page is in the expected state before executing the main test logic.
+12. Assess the positions of elements within the screen layout. Ensure that tests accurately reflect their intended locations, such as whether an element is centered or positioned relative to others.
+13. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+14. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+15. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+16. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+17. Provide your outputs in the correct format: <CODE></CODE> for main executable code, and <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> for element validation (when applicable).
+18. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+
+### Verify the prompt
+
+Before generating the code, please review the provided context and instructions to ensure they are clear and unambiguous. If you encounter any issues or have questions, please throw an informative error explaining the problem.
+
+### Examples
+
+#### Example of throwing an informative error:
+<CODE>
+throw new Error("Unable to find the 'Submit' button element in the current context.");
+</CODE>
+
+#### Example of correct output format with both code and validation matcher. Do **not** nest one tag inside another. Each tagged block must be separate and self-contained.
+
+**Main executable code:**
+<CODE>
+const submitButton = await element(by.id('submit-btn'));
+await submitButton.tap();
+</CODE>
+
+**Element validation matcher (separate from main code):**
+<CACHE_VALIDATION_MATCHER>
+const page = getCurrentPage(); const submitButton = await findElement(page, {id: 'submit-btn'}) ?? (() => { throw new Error('Submit button not found'); })();
+</CACHE_VALIDATION_MATCHER>
+
+#### Visual validation using the snapshot:
+\`\`\`typescript
+// Visual assertion passed based on the snapshot image.
+\`\`\`
+
+Please provide your code below:"
+`;
+
+exports[`PromptCreator Framework-specific references should use specific framework name when available 1`] = `
+"# Test Code Generation
+
+You are an AI assistant tasked with generating test code for a specific test step using Playwright.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
+
+## Testing Framework
+
+Framework: Playwright
+
+Description: End-to-end testing framework
+
+## Context
+
+### Intent to perform
+
+Generate the minimal executable code to perform the following intent: "click button"
+
+### View hierarchy
+
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot image
+
+A snapshot image is attached for visual reference.
+
+## Available Playwright API
+
+### Actions
+
+#### tap(element: Element)
+
+Taps on the specified element.
+
+##### Example
+
+\`\`\`
+await element(by.id("button")).tap();
+\`\`\`
+
+##### Guidelines
+
+- Ensure the element is tappable before using this method.
+
+#### typeText(element: Element, text: string)
+
+Types the specified text into the element.
+
+##### Example
+
+\`\`\`
+await element(by.id("input")).typeText("Hello, World!");
+\`\`\`
+
+##### Guidelines
+
+- Use this method only on text input elements.
+
+### Assertions
+
+#### toBeVisible()
+
+Asserts that the element is visible on the screen.
+
+##### Example
+
+\`\`\`
+await expect(element(by.id("title"))).toBeVisible();
+\`\`\`
+
+##### Guidelines
+
+- Consider scroll position when using this assertion.
+
+### Matchers
+
+#### by.id(id: string)
+
+Matches elements by their ID attribute.
+
+##### Example
+
+\`\`\`
+element(by.id("uniqueId"))
+\`\`\`
+
+##### Guidelines
+
+- Use unique IDs for elements to avoid conflicts, combine with atIndex() if necessary.
+
+## Instructions
+
+Your task is to generate the minimal executable code to perform the following intent: "click button". The code should include appropriate synchronization using Playwright's wait methods to ensure reliable test execution. You must provide TWO separate outputs: the main executable code in <CODE></CODE> tags, and element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags.
+
+Please follow these steps carefully:
+
+1. Analyze the provided intent, the view hierarchy, and the snapshot image to understand the required action.
+2. Determine if the intent can be fully validated visually using the snapshot image.
+3. If the intent can be visually analyzed and passes the visual check, return only comments explaining the successful visual assertion.
+4. If the visual assertion fails, return code that throws an informative error explaining the failure, inside <CODE></CODE> block.
+5. If visual validation is not possible, proceed to generate the minimal executable code required to perform the intent.
+6. When generating code, you MUST provide TWO separate outputs:
+7.   a) Main executable code inside <CODE></CODE> block - this performs the actual intent
+8.   b) Element validation code inside <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> block - this verifies elements exist
+9. The validation matcher should verify the existence of elements that will be interacted with in the main code. Do NOT put the validation matcher inside the <CODE> block.
+10. Include appropriate synchronization in your main code using Playwright's wait methods to ensure elements are present and ready before interacting with them. Use Playwright's documented wait APIs to make the test more reliable and prevent flaky failures.
+11. The validation matcher will be cached and used in future test runs to quickly verify that the page is in the expected state before executing the main test logic.
+12. Assess the positions of elements within the screen layout. Ensure that tests accurately reflect their intended locations, such as whether an element is centered or positioned relative to others.
+13. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+14. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+15. Use the provided Playwright APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+16. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+17. Provide your outputs in the correct format: <CODE></CODE> for main executable code, and <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> for element validation (when applicable).
+18. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+
+### Verify the prompt
+
+Before generating the code, please review the provided context and instructions to ensure they are clear and unambiguous. If you encounter any issues or have questions, please throw an informative error explaining the problem.
+
+### Examples
+
+#### Example of throwing an informative error:
+<CODE>
+throw new Error("Unable to find the 'Submit' button element in the current context.");
+</CODE>
+
+#### Example of correct output format with both code and validation matcher. Do **not** nest one tag inside another. Each tagged block must be separate and self-contained.
+
+**Main executable code:**
+<CODE>
+const submitButton = await element(by.id('submit-btn'));
+await submitButton.tap();
+</CODE>
+
+**Element validation matcher (separate from main code):**
+<CACHE_VALIDATION_MATCHER>
+const page = getCurrentPage(); const submitButton = await findElement(page, {id: 'submit-btn'}) ?? (() => { throw new Error('Submit button not found'); })();
+</CACHE_VALIDATION_MATCHER>
+
+#### Visual validation using the snapshot:
+\`\`\`typescript
+// Visual assertion passed based on the snapshot image.
+\`\`\`
+
+Please provide your code below:"
+`;
+
 exports[`PromptCreator constructor should merge redundant categories 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using Test Framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Testing Framework
 
@@ -20,6 +575,7 @@ Generate the minimal executable code to perform the following intent: "expect bu
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -28,7 +584,7 @@ Generate the minimal executable code to perform the following intent: "expect bu
 
 No snapshot image is attached for this intent.
 
-## Available Testing Framework API
+## Available Test Framework API
 
 ### Actions
 
@@ -122,18 +678,19 @@ element(by.id("uniqueId"))
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible"
+Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using Test Framework's wait methods to ensure elements are present and ready before interacting with them. Use Test Framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided Test Framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -142,28 +699,18 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;
 
 exports[`PromptCreator extentAPICategories should extend the API catalog with new category 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -173,6 +720,7 @@ Generate the minimal executable code to perform the following intent: "expect bu
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -263,18 +811,19 @@ await swipe("up");
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible"
+Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -283,28 +832,18 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;
 
 exports[`PromptCreator extentAPICategories should extend the API with existing category 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -314,6 +853,7 @@ Generate the minimal executable code to perform the following intent: "expect bu
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -418,18 +958,19 @@ await swipe("up");
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible"
+Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -438,28 +979,18 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;
 
 exports[`PromptCreator should create a prompt for an intent correctly 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -469,6 +1000,7 @@ Generate the minimal executable code to perform the following intent: "tap butto
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -543,22 +1075,28 @@ element(by.id("uniqueId"))
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "tap button"
+Your task is to generate the minimal executable code to perform the following intent: "tap button". The code should include appropriate synchronization using the testing framework's wait methods to ensure reliable test execution. You must provide TWO separate outputs: the main executable code in <CODE></CODE> tags, and element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags.
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent, the view hierarchy, and the snapshot image to understand the required action.
-2. Assess the positions of elements within the screen layout. Ensure that tests accurately reflect their intended locations, such as whether an element is centered or positioned relative to others. Tests should fail if the actual locations do not align with the expected configuration.
-3. Determine if the intent can be fully validated visually using the snapshot image.
-4. If the intent can be visually analyzed and passes the visual check, return only comments explaining the successful visual assertion.
-5. If the visual assertion fails, return code that throws an informative error explaining the failure.
-6. If visual validation is not possible, proceed to generate the minimal executable code required to perform the intent.
-7. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-8. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-9. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-10. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-11. Wrap the generated code with backticks, without any additional formatting.
-12. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Determine if the intent can be fully validated visually using the snapshot image.
+3. If the intent can be visually analyzed and passes the visual check, return only comments explaining the successful visual assertion.
+4. If the visual assertion fails, return code that throws an informative error explaining the failure, inside <CODE></CODE> block.
+5. If visual validation is not possible, proceed to generate the minimal executable code required to perform the intent.
+6. When generating code, you MUST provide TWO separate outputs:
+7.   a) Main executable code inside <CODE></CODE> block - this performs the actual intent
+8.   b) Element validation code inside <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> block - this verifies elements exist
+9. The validation matcher should verify the existence of elements that will be interacted with in the main code. Do NOT put the validation matcher inside the <CODE> block.
+10. Include appropriate synchronization in your main code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+11. The validation matcher will be cached and used in future test runs to quickly verify that the page is in the expected state before executing the main test logic.
+12. Assess the positions of elements within the screen layout. Ensure that tests accurately reflect their intended locations, such as whether an element is centered or positioned relative to others.
+13. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+14. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+15. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+16. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+17. Provide your outputs in the correct format: <CODE></CODE> for main executable code, and <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> for element validation (when applicable).
+18. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -567,33 +1105,36 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
+#### Example of correct output format with both code and validation matcher. Do **not** nest one tag inside another. Each tagged block must be separate and self-contained.
 
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
+**Main executable code:**
+<CODE>
+const submitButton = await element(by.id('submit-btn'));
+await submitButton.tap();
+</CODE>
 
-#### Example of returning a commented visual test if the visual assertion passes:
+**Element validation matcher (separate from main code):**
+<CACHE_VALIDATION_MATCHER>
+const page = getCurrentPage(); const submitButton = await findElement(page, {id: 'submit-btn'}) ?? (() => { throw new Error('Submit button not found'); })();
+</CACHE_VALIDATION_MATCHER>
+
+#### Visual validation using the snapshot:
 \`\`\`typescript
 // Visual assertion passed based on the snapshot image.
 \`\`\`
 
-Please provide your response below:"
+Please provide your code below:"
 `;
 
 exports[`PromptCreator should handle when no snapshot image is attached 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -603,6 +1144,7 @@ Generate the minimal executable code to perform the following intent: "expect bu
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -677,18 +1219,19 @@ element(by.id("uniqueId"))
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible"
+Your task is to generate the minimal executable code to perform the following intent: "expect button to be visible".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -697,28 +1240,18 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;
 
-exports[`PromptCreator should include API search results when provided 1`] = `
+exports[`PromptCreator should include error in the prompt if previous step failed 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -728,6 +1261,7 @@ Generate the minimal executable code to perform the following intent: "tap butto
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -735,6 +1269,28 @@ Generate the minimal executable code to perform the following intent: "tap butto
 ### Snapshot image
 
 No snapshot image is attached for this intent.
+
+### Previous steps
+
+#### Step 1
+- Intent: "navigate to login screen"
+- Generated code:
+\`\`\`
+await element(by.id("login")).tap();
+\`\`\`
+- Result: success
+
+#### Step 2
+- Intent: "enter username"
+- Generated code:
+\`\`\`
+await element(by.id("username")).typeText("john_doe");
+\`\`\`
+- Error occurred in your previous attempt. Try another approach to perform this step. Error message:
+\`\`\`
+could not find element
+\`\`\`
+
 
 ## Available Testing Framework API
 
@@ -800,35 +1356,21 @@ element(by.id("uniqueId"))
 
 - Use unique IDs for elements to avoid conflicts, combine with atIndex() if necessary.
 
-## Semantic Matches from API Search
-
-Semantic Category Matches:
-1. Actions
-   - Match Confidence: High - Contains tap-related actions
-   - Context Notes: Direct interaction with buttons
-
-Semantic API Matches:
-1. tap(element: Element)
-   - Match Confidence: High - Direct semantic match for tapping
-   - Context Notes: Primary method for button interaction
-2. by.id(id: string)
-   - Match Confidence: Medium - Required for element selection
-   - Context Notes: Used to locate the target button
-
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "tap button"
+Your task is to generate the minimal executable code to perform the following intent: "tap button".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -837,28 +1379,18 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;
 
 exports[`PromptCreator should include previous intents in the context 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -868,6 +1400,7 @@ Generate the minimal executable code to perform the following intent: "tap butto
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -876,7 +1409,7 @@ Generate the minimal executable code to perform the following intent: "tap butto
 
 No snapshot image is attached for this intent.
 
-### Previous intents
+### Previous steps
 
 #### Step 1
 - Intent: "navigate to login screen"
@@ -961,18 +1494,19 @@ element(by.id("uniqueId"))
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "tap button"
+Your task is to generate the minimal executable code to perform the following intent: "tap button".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -981,28 +1515,18 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;
 
-exports[`PromptCreator should not include API search results section when not provided 1`] = `
+exports[`PromptCreator should not include error if the error was not in the immediate previous step 1`] = `
 "# Test Code Generation
 
-You are an AI assistant tasked with generating test code for an application using the provided UI testing framework API.
-Please generate the minimal executable code to perform the desired intent based on the given information and context.
+You are an AI assistant tasked with generating test code for a specific test step using the mentioned testing framework.
+Generate the minimal executable code to perform the desired intent, based on the provided step and context.
 
 ## Context
 
@@ -1012,6 +1536,7 @@ Generate the minimal executable code to perform the following intent: "tap butto
 
 ### View hierarchy
 
+This is the complete view hierarchy. Use only the relevant parts for the executable code.
 \`\`\`
 <View><Button testID="submit" title="Submit" /></View>
 \`\`\`
@@ -1019,6 +1544,33 @@ Generate the minimal executable code to perform the following intent: "tap butto
 ### Snapshot image
 
 No snapshot image is attached for this intent.
+
+### Previous steps
+
+#### Step 1
+- Intent: "navigate to login screen"
+- Generated code:
+\`\`\`
+await element(by.id("login")).tap();
+\`\`\`
+- Result: success
+
+#### Step 2
+- Intent: "enter username"
+- Generated code:
+\`\`\`
+await element(by.id("username")).typeText("john_doe");
+\`\`\`
+
+
+#### Step 3
+- Intent: "enter username"
+- Generated code:
+\`\`\`
+await element(by.id("username")).typeText("john_doe");
+\`\`\`
+- Result: john doe
+
 
 ## Available Testing Framework API
 
@@ -1086,18 +1638,19 @@ element(by.id("uniqueId"))
 
 ## Instructions
 
-Your task is to generate the minimal executable code to perform the following intent: "tap button"
+Your task is to generate the minimal executable code to perform the following intent: "tap button".
 
 Please follow these steps carefully:
 
 1. Analyze the provided intent and the view hierarchy to understand the required action.
-2. Generate the minimal executable code required to perform the intent using the available API.
-3. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
-4. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
-5. Use the provided framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
-6. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
-7. Wrap the generated code with backticks, without any additional formatting.
-8. Do not provide any additional code beyond the minimal executable code required to perform the intent.
+2. Generate the minimal executable code required to perform the intent using the available API inside <CODE></CODE> block.
+3. Include appropriate synchronization in your code using the testing framework's wait methods to ensure elements are present and ready before interacting with them. Use the testing framework's documented wait APIs to make the test more reliable and prevent flaky failures.
+4. If you cannot generate the relevant code due to ambiguity or invalid intent, return code that throws an informative error explaining the problem in one sentence.
+5. Each step must be completely independent - do not rely on any variables or assignments from previous steps. Even if a variable was declared or assigned in a previous step, you must redeclare and reassign it in your current step.
+6. Use the provided the testing framework APIs as much as possible - prefer using the documented API methods over creating custom implementations.
+7. If you need to share data between steps, use the 'sharedContext' object. You can access and modify it directly like: sharedContext.myKey = 'myValue'
+8. Wrap the generated code with <CODE></CODE> block, without any additional formatting.
+9. Do not provide any additional code beyond the minimal executable code required to perform the intent.
 
 ### Verify the prompt
 
@@ -1106,19 +1659,9 @@ Before generating the code, please review the provided context and instructions 
 ### Examples
 
 #### Example of throwing an informative error:
-\`\`\`typescript
+<CODE>
 throw new Error("Unable to find the 'Submit' button element in the current context.");
-\`\`\`
+</CODE>
 
-#### Example of using shared context between steps:
-\`\`\`typescript
-// Step 1: Store the user ID
-const userId = await getUserId();
-sharedContext.userId = userId;
-
-// Step 2: Use the stored user ID
-await element(by.id('user-' + sharedContext.userId)).tap();
-\`\`\`
-
-Please provide your response below:"
+Please provide your code below:"
 `;

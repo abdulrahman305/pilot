@@ -5,8 +5,11 @@ export interface TestingFrameworkDriver {
   /**
    * Captures the current UI state as an image.
    * @returns Path to saved image, or undefined if imaging not supported
+   * @param useHighlightsIfSupported - Whether to highlight elements in the snapshot if supported by the framework driver
    */
-  captureSnapshotImage: () => Promise<string | undefined>;
+  captureSnapshotImage: (
+    useHighlightsIfSupported: boolean,
+  ) => Promise<string | undefined>;
 
   /**
    * Captures the current UI component hierarchy.
@@ -18,7 +21,21 @@ export interface TestingFrameworkDriver {
    * Available testing framework API methods.
    */
   apiCatalog: TestingFrameworkAPICatalog;
+
+  /**
+   * Additional driver configuration options.
+   */
+  driverConfig: TestingFrameworkDriverConfig;
 }
+
+/**
+ * Additional driver configuration.
+ *
+ * @property useSnapshotStabilitySync - Indicates whether the driver should use wait for screen stability.
+ */
+export type TestingFrameworkDriverConfig = {
+  useSnapshotStabilitySync: boolean;
+};
 
 /**
  * Testing framework API catalog structure.
@@ -34,6 +51,8 @@ export type TestingFrameworkAPICatalog = {
   categories: TestingFrameworkAPICatalogCategory[];
   /** List of restrictions and guidlines of wrong actions */
   restrictions?: string[];
+  /** Allows pilot to delay failure with extended actions*/
+  extended_step?: boolean;
 };
 
 /**

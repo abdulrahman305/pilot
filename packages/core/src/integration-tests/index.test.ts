@@ -1,14 +1,11 @@
-import pilot from "@/index";
-import fs from "fs";
 import { Pilot } from "@/Pilot";
+import fs from "fs";
 import {
   PromptHandler,
   TestingFrameworkDriver,
   AutoReport,
-  CacheValues,
-  SnapshotHashObject,
+  CacheValue,
 } from "@/types";
-import * as crypto from "crypto";
 import { mockedCacheFile, mockCache } from "@/test-utils/cache";
 import { StepPerformerPromptCreator } from "@/performers/step-performer/StepPerformerPromptCreator";
 import { StepPerformer } from "@/performers/step-performer/StepPerformer";
@@ -18,15 +15,16 @@ import {
   dummyContext,
 } from "@/test-utils/APICatalogTestUtils";
 import { getSnapshotImage } from "@/test-utils/SnapshotComparatorTestImages/SnapshotImageGetter";
-import { SnapshotComparator } from "@/common/snapshot/comparator/SnapshotComparator";
 
 jest.mock("crypto");
 jest.mock("fs");
 
+const CACHE_VALIDATION_TAG = `<CACHE_VALIDATION_MATCHER>verify button exists</CACHE_VALIDATION_MATCHER>`;
+
 describe("Pilot Integration Tests", () => {
-  let mockedCachedSnapshotHash: SnapshotHashObject;
   let mockFrameworkDriver: jest.Mocked<TestingFrameworkDriver>;
   let mockPromptHandler: jest.Mocked<PromptHandler>;
+  let pilot: Pilot;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -42,6 +40,7 @@ describe("Pilot Integration Tests", () => {
         context: {},
         categories: [],
       },
+      driverConfig: { useSnapshotStabilitySync: true },
     };
 
     mockPromptHandler = {
@@ -49,65 +48,29 @@ describe("Pilot Integration Tests", () => {
       isSnapshotImageSupported: jest.fn().mockReturnValue(true),
     };
 
-    mockedCachedSnapshotHash = await new SnapshotComparator().generateHashes(
-      getSnapshotImage("baseline"),
-    );
-
     mockCache();
 
-    (crypto.createHash as jest.Mock).mockReturnValue({
-      update: jest.fn().mockReturnValue({
-        digest: jest.fn().mockReturnValue("hash"),
-      }),
+    pilot = new Pilot({
+      frameworkDriver: mockFrameworkDriver,
+      promptHandler: mockPromptHandler,
     });
   });
 
-  afterEach(() => {
-    // It's generally not recommended to directly access private properties,
-    // but since Pilot is a singleton, we need to reset it between tests.
-    // If possible, consider adding a public reset method to the Pilot class.
-    (Pilot as any).instance = undefined;
-  });
-
-  describe("Initialization", () => {
-    it("should throw an error when perform is called before initialization", async () => {
-      await expect(pilot.perform("Some action")).rejects.toThrow();
-    });
-
-    it("should initialize successfully", () => {
-      expect(() => {
-        pilot.init({
-          frameworkDriver: mockFrameworkDriver,
-          promptHandler: mockPromptHandler,
-        });
-      }).not.toThrow();
-    });
-
-    it("should return false when isInitialized is called before initialization", () => {
-      expect(pilot.isInitialized()).toBe(false);
-    });
-
-    it("should return true when isInitialized is called after initialization", () => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-      });
-
-      expect(pilot.isInitialized()).toBe(true);
+  describe("Basic Operations", () => {
+    it("should be properly instantiated", () => {
+      expect(pilot).toBeInstanceOf(Pilot);
     });
   });
 
   describe("Single Step Operations", () => {
     beforeEach(() => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-      });
       pilot.start();
     });
 
     it("should successfully perform an action", async () => {
-      mockPromptHandler.runPrompt.mockResolvedValue("// No operation");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// No operation</CODE>${CACHE_VALIDATION_TAG}`,
+      );
       await expect(
         pilot.perform("Tap on the login button"),
       ).resolves.not.toThrow();
@@ -121,7 +84,9 @@ describe("Pilot Integration Tests", () => {
     });
 
     it("should successfully perform an assertion", async () => {
-      mockPromptHandler.runPrompt.mockResolvedValue("// No operation");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// No operation</CODE>${CACHE_VALIDATION_TAG}`,
+      );
 
       await expect(
         pilot.perform("The welcome message should be visible"),
@@ -137,9 +102,8 @@ describe("Pilot Integration Tests", () => {
 
     it("should handle errors during action execution", async () => {
       mockPromptHandler.runPrompt.mockResolvedValue(
-        'throw new Error("Element not found");',
+        `<CODE>throw new Error("Element not found")</CODE>${CACHE_VALIDATION_TAG}`,
       );
-
       await expect(
         pilot.perform("Tap on a non-existent button"),
       ).rejects.toThrow("Element not found");
@@ -147,7 +111,7 @@ describe("Pilot Integration Tests", () => {
 
     it("should handle errors during assertion execution", async () => {
       mockPromptHandler.runPrompt.mockResolvedValue(
-        'throw new Error("Element not found");',
+        `<CODE>throw new Error("Element not found")</CODE>${CACHE_VALIDATION_TAG}`,
       );
 
       await expect(
@@ -156,7 +120,9 @@ describe("Pilot Integration Tests", () => {
     });
 
     it("should handle errors during code evaluation", async () => {
-      mockPromptHandler.runPrompt.mockResolvedValue("foobar");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>foobar</CODE>${CACHE_VALIDATION_TAG}`,
+      );
 
       await expect(
         pilot.perform("The welcome message should be visible"),
@@ -166,18 +132,20 @@ describe("Pilot Integration Tests", () => {
 
   describe("Multiple Step Operations", () => {
     beforeEach(() => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-      });
       pilot.start();
     });
 
     it("should perform multiple steps using spread operator", async () => {
       mockPromptHandler.runPrompt
-        .mockResolvedValueOnce("// Tap login button")
-        .mockResolvedValueOnce("// Enter username")
-        .mockResolvedValueOnce("// Enter password");
+        .mockResolvedValueOnce(
+          `<CODE>// Tap login button</CODE>${CACHE_VALIDATION_TAG}`,
+        )
+        .mockResolvedValueOnce(
+          `<CODE>// Enter username</CODE>${CACHE_VALIDATION_TAG}`,
+        )
+        .mockResolvedValueOnce(
+          `<CODE>// Enter password</CODE>${CACHE_VALIDATION_TAG}`,
+        );
 
       await pilot.perform(
         "Tap on the login button",
@@ -189,17 +157,23 @@ describe("Pilot Integration Tests", () => {
       expect(mockFrameworkDriver.captureSnapshotImage).toHaveBeenCalledTimes(6);
       expect(
         mockFrameworkDriver.captureViewHierarchyString,
-      ).toHaveBeenCalledTimes(6);
+      ).toHaveBeenCalledTimes(3);
     });
 
     it("should handle errors in multiple steps and stop execution", async () => {
       mockPromptHandler.runPrompt
-        .mockResolvedValueOnce("// Tap login button")
-        .mockResolvedValueOnce('throw new Error("Username field not found");')
         .mockResolvedValueOnce(
-          'throw new Error("Username field not found - second");',
+          `<CODE>// Tap login button</CODE>${CACHE_VALIDATION_TAG}`,
         )
-        .mockResolvedValueOnce("// Enter password");
+        .mockResolvedValueOnce(
+          `<CODE>throw new Error("Username field not found");</CODE>${CACHE_VALIDATION_TAG}`,
+        )
+        .mockResolvedValueOnce(
+          `<CODE>throw new Error("Username field not found - second");</CODE>${CACHE_VALIDATION_TAG}`,
+        )
+        .mockResolvedValueOnce(
+          `<CODE>// Enter password</CODE>${CACHE_VALIDATION_TAG}`,
+        );
 
       await expect(
         pilot.perform(
@@ -210,19 +184,15 @@ describe("Pilot Integration Tests", () => {
       ).rejects.toThrow("Username field not found");
 
       expect(mockPromptHandler.runPrompt).toHaveBeenCalledTimes(3);
-      expect(mockFrameworkDriver.captureSnapshotImage).toHaveBeenCalledTimes(4);
+      expect(mockFrameworkDriver.captureSnapshotImage).toHaveBeenCalledTimes(6);
       expect(
         mockFrameworkDriver.captureViewHierarchyString,
-      ).toHaveBeenCalledTimes(4);
+      ).toHaveBeenCalledTimes(3);
     });
   });
 
   describe("Error Handling", () => {
     beforeEach(() => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-      });
       pilot.start();
     });
 
@@ -257,22 +227,20 @@ describe("Pilot Integration Tests", () => {
 
   describe("Context Management", () => {
     beforeEach(() => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-      });
       pilot.start();
     });
 
     it("should reset context when end is called", async () => {
-      mockPromptHandler.runPrompt.mockResolvedValueOnce("// Login action");
+      mockPromptHandler.runPrompt.mockResolvedValueOnce(
+        `<CODE>// Login action</CODE>${CACHE_VALIDATION_TAG}`,
+      );
       await pilot.perform("Log in to the application");
 
       pilot.end();
       pilot.start();
 
       mockPromptHandler.runPrompt.mockResolvedValueOnce(
-        "// New action after reset",
+        `<CODE>// New action after reset </CODE>${CACHE_VALIDATION_TAG}`,
       );
       await pilot.perform("Perform action after reset");
 
@@ -284,8 +252,12 @@ describe("Pilot Integration Tests", () => {
 
     it("should clear conversation history on reset", async () => {
       mockPromptHandler.runPrompt
-        .mockResolvedValueOnce("// Action 1")
-        .mockResolvedValueOnce("// Action 2");
+        .mockResolvedValueOnce(
+          `<CODE>// Action 1</CODE>${CACHE_VALIDATION_TAG}`,
+        )
+        .mockResolvedValueOnce(
+          `<CODE>// Action 2</CODE>${CACHE_VALIDATION_TAG}`,
+        );
 
       await pilot.perform("Action 1");
       await pilot.perform("Action 2");
@@ -298,7 +270,9 @@ describe("Pilot Integration Tests", () => {
       pilot.end();
       pilot.start();
 
-      mockPromptHandler.runPrompt.mockResolvedValueOnce("// New action");
+      mockPromptHandler.runPrompt.mockResolvedValueOnce(
+        `<CODE>// New action</CODE>${CACHE_VALIDATION_TAG}`,
+      );
       await pilot.perform("New action after reset");
 
       const lastCallArgsAfterReset =
@@ -311,7 +285,8 @@ describe("Pilot Integration Tests", () => {
 
   describe("Caching Behavior", () => {
     beforeEach(() => {
-      pilot.init({
+      // Create a new pilot instance with default cache options
+      pilot = new Pilot({
         frameworkDriver: mockFrameworkDriver,
         promptHandler: mockPromptHandler,
       });
@@ -319,65 +294,68 @@ describe("Pilot Integration Tests", () => {
     });
 
     it("should create cache file if it does not exist", async () => {
-      mockPromptHandler.runPrompt.mockResolvedValue("// Perform action");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// Perform action</CODE>${CACHE_VALIDATION_TAG}`,
+      );
 
       await pilot.perform("Perform action");
-      pilot.end(false);
+      pilot.end(true);
 
       expect(mockedCacheFile).toEqual({
-        '{"step":"Perform action","previous":[]}': expect.arrayContaining([
-          expect.objectContaining({
-            code: "// Perform action",
-            snapshotHash: expect.any(Object),
-            viewHierarchy: expect.any(String),
-          }),
-        ]),
+        '{"currentStep":"Perform action","previousSteps":[]}':
+          expect.arrayContaining([
+            expect.objectContaining({
+              value: {
+                code: "// Perform action",
+              },
+              validationMatcher: "verify button exists",
+            }),
+          ]),
       });
-    });
-
-    it("should read from existing cache file", async () => {
-      mockCache({
-        '{"step":"Cached action","previous":[]}': [
-          { code: "// Cached action code", viewHierarchy: "hash" },
-        ],
-      });
-
-      await pilot.perform("Cached action");
-
-      expect(mockPromptHandler.runPrompt).not.toHaveBeenCalled();
     });
 
     it("should use snapshot cache if available", async () => {
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// New action code</CODE><CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER>`,
+      );
       mockCache({
-        '{"step":"Cached action","previous":[]}': [
+        '{"currentStep":"Cached action","previousSteps":[]}': [
           {
-            code: "// Cached action code",
-            viewHierarchy: "WrongHash",
-            snapshotHash: mockedCachedSnapshotHash,
+            value: {
+              code: "// Cached action code",
+            },
+            validationMatcher: "verify button exists",
+            creationTime: Date.now(),
           },
         ],
       });
 
+      // restart pilot to reload cache file
+      pilot.end();
+      pilot.start();
+
       await pilot.perform("Cached action");
 
-      expect(mockPromptHandler.runPrompt).not.toHaveBeenCalled();
+      expect(mockPromptHandler.runPrompt).toHaveBeenCalledTimes(1);
     });
 
     it("should update cache file after performing new action", async () => {
-      mockPromptHandler.runPrompt.mockResolvedValue("// New action code");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// New action code</CODE><CACHE_VALIDATION_MATCHER>verify button exists</CACHE_VALIDATION_MATCHER>`,
+      );
 
       await pilot.perform("New action");
       pilot.end();
 
       expect(mockedCacheFile).toEqual({
-        '{"step":"New action","previous":[]}': expect.arrayContaining([
-          expect.any(Object),
+        '{"currentStep":"New action","previousSteps":[]}': [
           expect.objectContaining({
-            code: "// New action code",
-            snapshotHash: expect.any(Object),
-            viewHierarchy: expect.any(String),
+            value: {
+              code: "// New action code",
+            },
+            validationMatcher: "verify button exists",
           }),
-        ]),
+        ],
       });
     });
 
@@ -386,7 +364,9 @@ describe("Pilot Integration Tests", () => {
       (fs.readFileSync as jest.Mock).mockImplementation(() => {
         throw new Error("Read error");
       });
-      mockPromptHandler.runPrompt.mockResolvedValue("// New action code");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// New action code</CODE>${CACHE_VALIDATION_TAG}`,
+      );
 
       await pilot.perform("Action with read error");
 
@@ -398,17 +378,39 @@ describe("Pilot Integration Tests", () => {
       (fs.writeFileSync as jest.Mock).mockImplementation(() => {
         throw new Error("Write error");
       });
-      mockPromptHandler.runPrompt.mockResolvedValue("// Action code");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// Action code</CODE>${CACHE_VALIDATION_TAG}`,
+      );
 
       await expect(
         pilot.perform("Action with write error"),
       ).resolves.not.toThrow();
     });
+
+    it("should add error and not add result for next perform step", async () => {
+      let promptParam: string = "";
+      mockPromptHandler.runPrompt
+        .mockResolvedValueOnce(
+          `<CODE>throw new Error("Element not found");</CODE>${CACHE_VALIDATION_TAG}`,
+        )
+        .mockImplementationOnce((prompt, _snapshot) => {
+          promptParam = prompt;
+          return Promise.resolve(
+            `<CODE>// No operation</CODE>${CACHE_VALIDATION_TAG}`,
+          );
+        });
+
+      await pilot.perform("Tap on a non-existent button");
+
+      expect(promptParam).toContain("Element not found");
+      expect(promptParam).toMatchSnapshot();
+    });
   });
 
   describe("Feature Support", () => {
     beforeEach(() => {
-      pilot.init({
+      // Create a new instance for each test
+      pilot = new Pilot({
         frameworkDriver: mockFrameworkDriver,
         promptHandler: mockPromptHandler,
       });
@@ -418,7 +420,7 @@ describe("Pilot Integration Tests", () => {
     it("should work without snapshot images when not supported", async () => {
       mockPromptHandler.isSnapshotImageSupported.mockReturnValue(false);
       mockPromptHandler.runPrompt.mockResolvedValue(
-        "// Perform action without snapshot",
+        `<CODE>// Perform action without snapshot</CODE>${CACHE_VALIDATION_TAG}`,
       );
 
       await pilot.perform("Perform action without snapshot support");
@@ -435,7 +437,8 @@ describe("Pilot Integration Tests", () => {
   describe("API Catalog Extension", () => {
     beforeEach(() => {
       jest.clearAllMocks();
-      pilot.init({
+      // Create new pilot instance
+      pilot = new Pilot({
         frameworkDriver: mockFrameworkDriver,
         promptHandler: mockPromptHandler,
       });
@@ -461,10 +464,7 @@ describe("Pilot Integration Tests", () => {
     });
   });
 
-  describe("Pilot Method", () => {
-    let mockFrameworkDriver: any;
-    let mockPromptHandler: jest.Mocked<PromptHandler>;
-
+  describe("Autopilot Method", () => {
     beforeEach(() => {
       jest.clearAllMocks();
 
@@ -480,27 +480,25 @@ describe("Pilot Integration Tests", () => {
         },
         captureSnapshotImage: jest.fn(),
         captureViewHierarchyString: jest.fn(),
+        driverConfig: { useSnapshotStabilitySync: true },
       };
 
-      Pilot.init({
+      // Use the standard pilot instance
+      pilot = new Pilot({
         frameworkDriver: mockFrameworkDriver,
         promptHandler: mockPromptHandler,
       });
-      Pilot.getInstance().start();
+      pilot.start();
     });
 
-    afterEach(() => {
-      (Pilot as any)["instance"] = undefined;
-    });
-
-    it("should perform pilot flow and return a pilot report", async () => {
+    it("should perform autopilot flow and return a pilot report", async () => {
       const goal = "Complete the login flow";
       const mockPilotReport: AutoReport = {
         summary: "All steps completed successfully",
         goal: goal,
         steps: [
           {
-            screenDescription: "Login Screen", // Added screenDescription
+            screenDescription: "Login Screen",
             plan: {
               thoughts: "First step thoughts",
               action: "Tap on login button",
@@ -534,153 +532,80 @@ describe("Pilot Integration Tests", () => {
           },
         },
       };
-      const copilotInstance = Pilot.getInstance();
+
       const spyPilotPerformerPerform = jest
-        .spyOn(copilotInstance["autoPerformer"], "perform")
+        .spyOn(pilot["autoPerformer"], "perform")
         .mockResolvedValue(mockPilotReport);
 
-      const result = await copilotInstance.autopilot(goal);
+      const result = await pilot.autopilot(goal);
 
       expect(spyPilotPerformerPerform).toHaveBeenCalledTimes(1);
-      expect(spyPilotPerformerPerform).toHaveBeenCalledWith(goal);
+      expect(spyPilotPerformerPerform).toHaveBeenCalledWith(goal, undefined);
       expect(result).toEqual(mockPilotReport);
     });
 
     it("should handle errors from autoPerformer.perform", async () => {
       const goal = "Some goal that causes an error";
+      const errorMessage = "Error during autopilot execution";
 
-      const errorMessage = "Error during pilot execution";
-      const copilotInstance = Pilot.getInstance();
       const spyPilotPerformerPerform = jest
-        .spyOn(copilotInstance["autoPerformer"], "perform")
+        .spyOn(pilot["autoPerformer"], "perform")
         .mockRejectedValue(new Error(errorMessage));
 
-      await expect(copilotInstance.autopilot(goal)).rejects.toThrow(
-        errorMessage,
-      );
+      await expect(pilot.autopilot(goal)).rejects.toThrow(errorMessage);
 
       expect(spyPilotPerformerPerform).toHaveBeenCalledTimes(1);
-      expect(spyPilotPerformerPerform).toHaveBeenCalledWith(goal);
+      expect(spyPilotPerformerPerform).toHaveBeenCalledWith(goal, undefined);
     });
   });
 
   describe("Cache Modes", () => {
     beforeEach(() => {
-      mockPromptHandler.runPrompt.mockResolvedValue("// No operation");
+      mockPromptHandler.runPrompt.mockResolvedValue(
+        `<CODE>// No operation</CODE>${CACHE_VALIDATION_TAG}`,
+      );
     });
 
-    it("should use full cache mode by default", async () => {
-      pilot.init({
+    it("should use cache by default", async () => {
+      // Create a new instance with default cache options
+      const cachePilot = new Pilot({
         frameworkDriver: mockFrameworkDriver,
         promptHandler: mockPromptHandler,
       });
-      pilot.start();
+      cachePilot.start();
 
-      await pilot.perform("Tap on the login button");
-      pilot.end();
+      await cachePilot.perform("Tap on the login button");
+      cachePilot.end();
 
       const firstCacheValue = Object.values(
-        (mockedCacheFile as Record<string, CacheValues>) || {},
+        (mockedCacheFile as Record<string, CacheValue<any>[]>) || {},
       )[0][0];
 
-      expect(firstCacheValue).toHaveProperty("viewHierarchy");
-      expect(firstCacheValue).toHaveProperty("code");
-      expect(firstCacheValue).toHaveProperty("snapshotHash");
-    });
-
-    it("should not include view hierarchy in cache value when using lightweight mode", async () => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-        options: {
-          cacheMode: "lightweight",
-        },
-      });
-      pilot.start();
-
-      await pilot.perform("Tap on the login button");
-      pilot.end();
-      const firstCacheValue = Object.values(
-        (mockedCacheFile as Record<string, CacheValues>) || {},
-      )[0][0];
-
-      expect(firstCacheValue).not.toHaveProperty("viewHierarchy");
-      expect(firstCacheValue).toHaveProperty("code");
+      expect(firstCacheValue).toHaveProperty("value");
     });
 
     it("should not use cache when cache mode is disabled", async () => {
-      pilot.init({
+      // Create a new instance with cache disabled
+      const noCachePilot = new Pilot({
         frameworkDriver: mockFrameworkDriver,
         promptHandler: mockPromptHandler,
         options: {
-          cacheMode: "disabled",
+          cacheOptions: { shouldUseCache: false },
         },
       });
-      pilot.start();
+      noCachePilot.start();
 
       // First call
-      await pilot.perform("Tap on the login button");
-      pilot.end();
+      await noCachePilot.perform("Tap on the login button");
+      noCachePilot.end();
 
       // Second call with same intent
-      pilot.start();
-      await pilot.perform("Tap on the login button");
-      pilot.end();
+      noCachePilot.start();
+      await noCachePilot.perform("Tap on the login button");
+      noCachePilot.end();
 
       // Should call runPrompt twice since cache is disabled
       expect(mockPromptHandler.runPrompt).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("Analysis Modes", () => {
-    beforeEach(() => {
-      mockPromptHandler.runPrompt.mockResolvedValue("// No operation");
-    });
-
-    it("should perform fast analysis by default", async () => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-      });
-
-      pilot.start();
-      await pilot.perform("Tap on the login button");
-      pilot.end();
-
-      expect(mockPromptHandler.runPrompt).toHaveBeenCalledTimes(1);
-    });
-
-    it("should perform fast analysis when specified", async () => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-        options: {
-          analysisMode: "fast",
-        },
-      });
-
-      pilot.start();
-      await pilot.perform("Tap on the login button");
-      pilot.end();
-
-      expect(mockPromptHandler.runPrompt).toHaveBeenCalledTimes(1);
-    });
-
-    it("should perform full analysis when specified", async () => {
-      pilot.init({
-        frameworkDriver: mockFrameworkDriver,
-        promptHandler: mockPromptHandler,
-        options: {
-          analysisMode: "full",
-        },
-      });
-
-      pilot.start();
-      await pilot.perform("Tap on the login button");
-      pilot.end();
-
-      // requires several prompts to be run
-      expect(mockPromptHandler.runPrompt).toHaveBeenCalledTimes(3);
     });
   });
 });

@@ -1,16 +1,337 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PilotPromptCreator should create a prompt for an intent correctly 1`] = `
-"# Next Step Generation and UX/Accessibility/Internationalization Reporting
+exports[`PilotPromptCreator with review types should contain error in the prompt if previous step failed 1`] = `
+"# Next Step Generation and UX, Accessibility, Internationalization Reporting
 
 You are an AI assistant tasked with:
 
 1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
    Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
    and another string (which can be greater than one line) which describes your thoughts while creating the step.
-   If you think that the goal has been reached return a one word action 'success'
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
    If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
-2. Creating comprehensive UX, Accessibility, and Internationalization reports that include a review, findings, and a score.
+
+2. Creating comprehensive UX, Accessibility, Internationalization reports that include a review, findings, and a score.
+
+Please adhere to the instructions below to provide detailed and helpful responses.
+
+## Context
+
+### Goal: "tap button"
+
+### View Hierarchy
+
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot Image
+
+No snapshot image is attached for this intent.
+
+### Previous Steps
+
+#### Step 1
+- Screen Name : "default 1"
+- Intent: "navigate to login screen"
+
+#### Step 2
+- Screen Name : "default 2"
+- Intent: "enter username"
+- Error occurred in your previous attempt. Try another approach to perform this step. Error message:
+\`\`\`
+Failed to enter username
+\`\`\`
+
+
+## Instructions
+
+Your tasks are as follows:
+
+1. **Next Action Prediction**: Generate a one-line string that precisely describes the next action the user should take to move closer to their goal: "tap button"
+
+2. **Thought Process**: Provide a detailed description (which can be more than one line) of your thought process while determining the next action.
+
+3. **Review Reports**: Create comprehensive review reports for each applicable section (e.g., UX, Accessibility, Internationalization) that include a summary, findings, and a score.
+
+### Please follow these steps carefully:
+
+1. Analyze the provided goal, view hierarchy, and previous steps to understand the user's progress and available actions.
+2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
+3. Consider the elements present in the view hierarchy to determine possible next actions.
+4. Determine the optimal next action the user should take to move closer to their goal.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+15. Also, provide comprehensive overall UX, Accessibility, Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
+16. For each applicable review section (UX, Accessibility, Internationalization), create a comprehensive report enclosed within corresponding tags (e.g., <UX>, <ACCESSIBILITY>, <INTERNATIONALIZATION>), including a summary, findings, and a score out of 10.
+17. Ensure each section is clearly labeled and formatted as shown in the examples.
+18. You can use the same formatting syntax in your review summaries and findings:
+19.   - Regular text will be displayed in gray (default color)
+20.   - *Text between single asterisks* will be displayed in white
+21.   - **Text between double asterisks** will be displayed bold in gray
+22.   - ***Text between triple asterisks*** will be displayed bold in white
+23. This will help highlight important aspects of your reviews.
+24. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
+
+### Verify the Prompt
+
+Before generating your response, please review the provided context and instructions to ensure they are clear and unambiguous.
+If you encounter any issues or have questions, please throw an informative error explaining the problem in one sentence.
+
+### Examples for Answer Formats
+
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain UX, Accessibility, Internationalization open and close tags.
+
+#### Next Action with Thoughts:
+
+<SCREENDESCRIPTION>
+Products Catalog Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
+</THOUGHTS>
+<ACTION>
+Tap on the 'Add to Cart' button beneath the red dress product
+</ACTION>
+
+<UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Intermediate Step - Cart Notification:
+
+<SCREENDESCRIPTION>
+Product Added Notification Overlay
+</SCREENDESCRIPTION>
+<THOUGHTS>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
+</THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   <UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
+<ACTION>
+success
+</ACTION>
+
+<UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Additional Example:
+
+<SCREENDESCRIPTION>
+User Profile Screen.
+</SCREENDESCRIPTION>
+<THOUGHTS>
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
+</THOUGHTS>
+<ACTION>
+Select the 'Profile' icon (ID: icon_profile)
+</ACTION>
+
+<UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Throwing an Informative Error:
+
+\`\`\`
+Error: Unable to determine the next action due to insufficient information in the view hierarchy.
+\`\`\`
+
+Please provide your response below:"
+`;
+
+exports[`PilotPromptCreator with review types should create a prompt for an intent correctly with additional review types 1`] = `
+"# Next Step Generation and UX, Accessibility, Internationalization Reporting
+
+You are an AI assistant tasked with:
+
+1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
+   Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
+   and another string (which can be greater than one line) which describes your thoughts while creating the step.
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
+   If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
+
+2. Creating comprehensive UX, Accessibility, Internationalization reports that include a review, findings, and a score.
 
 Please adhere to the instructions below to provide detailed and helpful responses.
 
@@ -44,14 +365,26 @@ Your tasks are as follows:
 2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
 3. Consider the elements present in the view hierarchy and the snapshot image to determine possible next actions.
 4. Determine the optimal next action the user should take to move closer to their goal.
-5. Ensure the action is directly related to available elements in the view hierarchy.
-6. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
-7. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
-8. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags.
-9. If the goal is achieved, add a \`<SUMMARY>\` block inside the \`<THOUGHTS>\` section, summarizing the overall flow and findings. Also, provide comprehensive overall UX, Accessibility, and Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
-10. For each applicable review section (\`UX\`, \`Accessibility\`, \`Internationalization\`), create a comprehensive report enclosed within corresponding tags (e.g., \`<UX>\`, \`<ACCESSIBILITY>\`, \`<INTERNATIONALIZATION>\`), including a summary, findings, and a score out of 10.
-11. Ensure each section is clearly labeled and formatted as shown in the examples.
-12. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+15. Also, provide comprehensive overall UX, Accessibility, Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
+16. For each applicable review section (UX, Accessibility, Internationalization), create a comprehensive report enclosed within corresponding tags (e.g., <UX>, <ACCESSIBILITY>, <INTERNATIONALIZATION>), including a summary, findings, and a score out of 10.
+17. Ensure each section is clearly labeled and formatted as shown in the examples.
+18. You can use the same formatting syntax in your review summaries and findings:
+19.   - Regular text will be displayed in gray (default color)
+20.   - *Text between single asterisks* will be displayed in white
+21.   - **Text between double asterisks** will be displayed bold in gray
+22.   - ***Text between triple asterisks*** will be displayed bold in white
+23. This will help highlight important aspects of your reviews.
+24. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
 
 ### Verify the Prompt
 
@@ -60,103 +393,170 @@ If you encounter any issues or have questions, please throw an informative error
 
 ### Examples for Answer Formats
 
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain UX, Accessibility, Internationalization open and close tags.
+
 #### Next Action with Thoughts:
 
 <SCREENDESCRIPTION>
-Registration Page.
+Products Catalog Page
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To complete the registration process, tapping on the 'Submit' button is necessary.
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
 </THOUGHTS>
 <ACTION>
-Tap on the 'Submit' button, which has the ID 'btn_submit' and is located at the bottom of the registration form.
+Tap on the 'Add to Cart' button beneath the red dress product
 </ACTION>
 
 <UX>
 <SUMMARY>
-The 'Submit' button (ID: btn_submit) may not be clearly visible to users, potentially hindering the registration process.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - The button is positioned below multiple input fields, requiring excessive scrolling - Position the 'Submit' button prominently or make it sticky on the screen.
-  - It uses a color that blends with the background - Use a contrasting color to make the button stand out.
-  - The button label uses a small font size, which may be hard to read - Increase the font size of the label to improve readability.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-The 'Submit' button (ID: btn_submit) lacks essential accessibility features.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Missing 'aria-label' or accessible name for screen readers. - Add an 'aria-label' with an appropriate description.
-  - The touch target size is smaller than recommended. - Increase the touch target size to at least 44x44 pixels.
-  - The contrast ratio between the text and background is insufficient. - Adjust colors to meet contrast ratio guidelines.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-The 'Submit' button may not be properly localized for all supported languages.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - The button text is hard-coded in English - Use localization files to support multiple languages.
-  - Layout may break for languages with longer text strings - Ensure dynamic resizing or text wrapping is implemented.
-  - Missing support for right-to-left languages - Adjust layout to support RTL languages where necessary.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-4/10
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
-#### Example of Success:
+#### Intermediate Step - Cart Notification:
 
 <SCREENDESCRIPTION>
-Goal Page Name.
+Product Added Notification Overlay
 </SCREENDESCRIPTION>
 <THOUGHTS>
-All actions required to achieve the goal have been completed successfully.
-<SUMMARY>
-An overall summary of the actions taken and reviews conducted during the previous steps.
-</SUMMARY>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
 </THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   <UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
 <ACTION>
 success
 </ACTION>
+
 <UX>
 <SUMMARY>
-An overall UX review summary based on the previous steps' reviews.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of UX findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-7/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-An overall accessibility review summary based on the previous steps' reviews.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of accessibility findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-An overall internationalization review summary based on the previous steps' reviews.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of internationalization findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
@@ -166,46 +566,51 @@ An overall internationalization review summary based on the previous steps' revi
 User Profile Screen.
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To view the user profile, selecting the 'Profile' icon (ID: icon_profile) is required.
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
 </THOUGHTS>
 <ACTION>
 Select the 'Profile' icon (ID: icon_profile)
 </ACTION>
+
 <UX>
 <SUMMARY>
-The 'Profile' icon (ID: icon_profile) might not be immediately recognized by all users.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Uses an uncommon symbol instead of the standard user silhouette - Replace with the standard user silhouette icon.
-  - Lacks a text label, which may confuse some users - Add a text label or tooltip that says 'Profile'.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-The 'Profile' icon (ID: icon_profile) has accessibility issues that could affect users with disabilities.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - No 'aria-label' provided for screen readers - Add an 'aria-label' with the text 'User Profile'.
-  - The icon is not reachable via keyboard navigation - Ensure the icon can be focused and activated via keyboard.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-4/10
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-The 'Profile' icon may not be properly adapted for different locales.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Iconography may not be universally recognized - Consider using culturally neutral icons.
-  - No localization for the tooltip text - Ensure tooltips and labels are localized.
-  - Date and time formats on the profile screen may not match user locale - Use locale-aware date and time formats.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
@@ -218,17 +623,19 @@ Error: Unable to determine the next action due to insufficient information in th
 Please provide your response below:"
 `;
 
-exports[`PilotPromptCreator should handle when no snapshot image is attached 1`] = `
-"# Next Step Generation and UX/Accessibility/Internationalization Reporting
+exports[`PilotPromptCreator with review types should handle when no snapshot image is attached 1`] = `
+"# Next Step Generation and UX, Accessibility, Internationalization Reporting
 
 You are an AI assistant tasked with:
 
 1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
    Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
    and another string (which can be greater than one line) which describes your thoughts while creating the step.
-   If you think that the goal has been reached return a one word action 'success'
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
    If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
-2. Creating comprehensive UX, Accessibility, and Internationalization reports that include a review, findings, and a score.
+
+2. Creating comprehensive UX, Accessibility, Internationalization reports that include a review, findings, and a score.
 
 Please adhere to the instructions below to provide detailed and helpful responses.
 
@@ -262,14 +669,26 @@ Your tasks are as follows:
 2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
 3. Consider the elements present in the view hierarchy to determine possible next actions.
 4. Determine the optimal next action the user should take to move closer to their goal.
-5. Ensure the action is directly related to available elements in the view hierarchy.
-6. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
-7. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
-8. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags.
-9. If the goal is achieved, add a \`<SUMMARY>\` block inside the \`<THOUGHTS>\` section, summarizing the overall flow and findings. Also, provide comprehensive overall UX, Accessibility, and Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
-10. For each applicable review section (\`UX\`, \`Accessibility\`, \`Internationalization\`), create a comprehensive report enclosed within corresponding tags (e.g., \`<UX>\`, \`<ACCESSIBILITY>\`, \`<INTERNATIONALIZATION>\`), including a summary, findings, and a score out of 10.
-11. Ensure each section is clearly labeled and formatted as shown in the examples.
-12. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+15. Also, provide comprehensive overall UX, Accessibility, Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
+16. For each applicable review section (UX, Accessibility, Internationalization), create a comprehensive report enclosed within corresponding tags (e.g., <UX>, <ACCESSIBILITY>, <INTERNATIONALIZATION>), including a summary, findings, and a score out of 10.
+17. Ensure each section is clearly labeled and formatted as shown in the examples.
+18. You can use the same formatting syntax in your review summaries and findings:
+19.   - Regular text will be displayed in gray (default color)
+20.   - *Text between single asterisks* will be displayed in white
+21.   - **Text between double asterisks** will be displayed bold in gray
+22.   - ***Text between triple asterisks*** will be displayed bold in white
+23. This will help highlight important aspects of your reviews.
+24. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
 
 ### Verify the Prompt
 
@@ -278,103 +697,170 @@ If you encounter any issues or have questions, please throw an informative error
 
 ### Examples for Answer Formats
 
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain UX, Accessibility, Internationalization open and close tags.
+
 #### Next Action with Thoughts:
 
 <SCREENDESCRIPTION>
-Registration Page.
+Products Catalog Page
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To complete the registration process, tapping on the 'Submit' button is necessary.
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
 </THOUGHTS>
 <ACTION>
-Tap on the 'Submit' button, which has the ID 'btn_submit' and is located at the bottom of the registration form.
+Tap on the 'Add to Cart' button beneath the red dress product
 </ACTION>
 
 <UX>
 <SUMMARY>
-The 'Submit' button (ID: btn_submit) may not be clearly visible to users, potentially hindering the registration process.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - The button is positioned below multiple input fields, requiring excessive scrolling - Position the 'Submit' button prominently or make it sticky on the screen.
-  - It uses a color that blends with the background - Use a contrasting color to make the button stand out.
-  - The button label uses a small font size, which may be hard to read - Increase the font size of the label to improve readability.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-The 'Submit' button (ID: btn_submit) lacks essential accessibility features.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Missing 'aria-label' or accessible name for screen readers. - Add an 'aria-label' with an appropriate description.
-  - The touch target size is smaller than recommended. - Increase the touch target size to at least 44x44 pixels.
-  - The contrast ratio between the text and background is insufficient. - Adjust colors to meet contrast ratio guidelines.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-The 'Submit' button may not be properly localized for all supported languages.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - The button text is hard-coded in English - Use localization files to support multiple languages.
-  - Layout may break for languages with longer text strings - Ensure dynamic resizing or text wrapping is implemented.
-  - Missing support for right-to-left languages - Adjust layout to support RTL languages where necessary.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-4/10
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
-#### Example of Success:
+#### Intermediate Step - Cart Notification:
 
 <SCREENDESCRIPTION>
-Goal Page Name.
+Product Added Notification Overlay
 </SCREENDESCRIPTION>
 <THOUGHTS>
-All actions required to achieve the goal have been completed successfully.
-<SUMMARY>
-An overall summary of the actions taken and reviews conducted during the previous steps.
-</SUMMARY>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
 </THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   <UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
 <ACTION>
 success
 </ACTION>
+
 <UX>
 <SUMMARY>
-An overall UX review summary based on the previous steps' reviews.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of UX findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-7/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-An overall accessibility review summary based on the previous steps' reviews.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of accessibility findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-An overall internationalization review summary based on the previous steps' reviews.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of internationalization findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
@@ -384,46 +870,51 @@ An overall internationalization review summary based on the previous steps' revi
 User Profile Screen.
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To view the user profile, selecting the 'Profile' icon (ID: icon_profile) is required.
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
 </THOUGHTS>
 <ACTION>
 Select the 'Profile' icon (ID: icon_profile)
 </ACTION>
+
 <UX>
 <SUMMARY>
-The 'Profile' icon (ID: icon_profile) might not be immediately recognized by all users.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Uses an uncommon symbol instead of the standard user silhouette - Replace with the standard user silhouette icon.
-  - Lacks a text label, which may confuse some users - Add a text label or tooltip that says 'Profile'.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-The 'Profile' icon (ID: icon_profile) has accessibility issues that could affect users with disabilities.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - No 'aria-label' provided for screen readers - Add an 'aria-label' with the text 'User Profile'.
-  - The icon is not reachable via keyboard navigation - Ensure the icon can be focused and activated via keyboard.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-4/10
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-The 'Profile' icon may not be properly adapted for different locales.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Iconography may not be universally recognized - Consider using culturally neutral icons.
-  - No localization for the tooltip text - Ensure tooltips and labels are localized.
-  - Date and time formats on the profile screen may not match user locale - Use locale-aware date and time formats.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
@@ -436,17 +927,19 @@ Error: Unable to determine the next action due to insufficient information in th
 Please provide your response below:"
 `;
 
-exports[`PilotPromptCreator should include previous intents in the context 1`] = `
-"# Next Step Generation and UX/Accessibility/Internationalization Reporting
+exports[`PilotPromptCreator with review types should include previous intents in the context 1`] = `
+"# Next Step Generation and UX, Accessibility, Internationalization Reporting
 
 You are an AI assistant tasked with:
 
 1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
    Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
    and another string (which can be greater than one line) which describes your thoughts while creating the step.
-   If you think that the goal has been reached return a one word action 'success'
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
    If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
-2. Creating comprehensive UX, Accessibility, and Internationalization reports that include a review, findings, and a score.
+
+2. Creating comprehensive UX, Accessibility, Internationalization reports that include a review, findings, and a score.
 
 Please adhere to the instructions below to provide detailed and helpful responses.
 
@@ -491,14 +984,26 @@ Your tasks are as follows:
 2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
 3. Consider the elements present in the view hierarchy to determine possible next actions.
 4. Determine the optimal next action the user should take to move closer to their goal.
-5. Ensure the action is directly related to available elements in the view hierarchy.
-6. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
-7. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
-8. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags.
-9. If the goal is achieved, add a \`<SUMMARY>\` block inside the \`<THOUGHTS>\` section, summarizing the overall flow and findings. Also, provide comprehensive overall UX, Accessibility, and Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
-10. For each applicable review section (\`UX\`, \`Accessibility\`, \`Internationalization\`), create a comprehensive report enclosed within corresponding tags (e.g., \`<UX>\`, \`<ACCESSIBILITY>\`, \`<INTERNATIONALIZATION>\`), including a summary, findings, and a score out of 10.
-11. Ensure each section is clearly labeled and formatted as shown in the examples.
-12. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+15. Also, provide comprehensive overall UX, Accessibility, Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
+16. For each applicable review section (UX, Accessibility, Internationalization), create a comprehensive report enclosed within corresponding tags (e.g., <UX>, <ACCESSIBILITY>, <INTERNATIONALIZATION>), including a summary, findings, and a score out of 10.
+17. Ensure each section is clearly labeled and formatted as shown in the examples.
+18. You can use the same formatting syntax in your review summaries and findings:
+19.   - Regular text will be displayed in gray (default color)
+20.   - *Text between single asterisks* will be displayed in white
+21.   - **Text between double asterisks** will be displayed bold in gray
+22.   - ***Text between triple asterisks*** will be displayed bold in white
+23. This will help highlight important aspects of your reviews.
+24. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
 
 ### Verify the Prompt
 
@@ -507,103 +1012,170 @@ If you encounter any issues or have questions, please throw an informative error
 
 ### Examples for Answer Formats
 
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain UX, Accessibility, Internationalization open and close tags.
+
 #### Next Action with Thoughts:
 
 <SCREENDESCRIPTION>
-Registration Page.
+Products Catalog Page
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To complete the registration process, tapping on the 'Submit' button is necessary.
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
 </THOUGHTS>
 <ACTION>
-Tap on the 'Submit' button, which has the ID 'btn_submit' and is located at the bottom of the registration form.
+Tap on the 'Add to Cart' button beneath the red dress product
 </ACTION>
 
 <UX>
 <SUMMARY>
-The 'Submit' button (ID: btn_submit) may not be clearly visible to users, potentially hindering the registration process.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - The button is positioned below multiple input fields, requiring excessive scrolling - Position the 'Submit' button prominently or make it sticky on the screen.
-  - It uses a color that blends with the background - Use a contrasting color to make the button stand out.
-  - The button label uses a small font size, which may be hard to read - Increase the font size of the label to improve readability.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-The 'Submit' button (ID: btn_submit) lacks essential accessibility features.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Missing 'aria-label' or accessible name for screen readers. - Add an 'aria-label' with an appropriate description.
-  - The touch target size is smaller than recommended. - Increase the touch target size to at least 44x44 pixels.
-  - The contrast ratio between the text and background is insufficient. - Adjust colors to meet contrast ratio guidelines.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-The 'Submit' button may not be properly localized for all supported languages.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - The button text is hard-coded in English - Use localization files to support multiple languages.
-  - Layout may break for languages with longer text strings - Ensure dynamic resizing or text wrapping is implemented.
-  - Missing support for right-to-left languages - Adjust layout to support RTL languages where necessary.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-4/10
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
-#### Example of Success:
+#### Intermediate Step - Cart Notification:
 
 <SCREENDESCRIPTION>
-Goal Page Name.
+Product Added Notification Overlay
 </SCREENDESCRIPTION>
 <THOUGHTS>
-All actions required to achieve the goal have been completed successfully.
-<SUMMARY>
-An overall summary of the actions taken and reviews conducted during the previous steps.
-</SUMMARY>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
 </THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   <UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
 <ACTION>
 success
 </ACTION>
+
 <UX>
 <SUMMARY>
-An overall UX review summary based on the previous steps' reviews.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of UX findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-7/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-An overall accessibility review summary based on the previous steps' reviews.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of accessibility findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-An overall internationalization review summary based on the previous steps' reviews.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Summary of internationalization findings from previous steps.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10 - This is an overall score for the entire flow.
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
 
@@ -613,48 +1185,643 @@ An overall internationalization review summary based on the previous steps' revi
 User Profile Screen.
 </SCREENDESCRIPTION>
 <THOUGHTS>
-To view the user profile, selecting the 'Profile' icon (ID: icon_profile) is required.
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
 </THOUGHTS>
 <ACTION>
 Select the 'Profile' icon (ID: icon_profile)
 </ACTION>
+
 <UX>
 <SUMMARY>
-The 'Profile' icon (ID: icon_profile) might not be immediately recognized by all users.
+The product catalog page has some ***ux considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Uses an uncommon symbol instead of the standard user silhouette - Replace with the standard user silhouette icon.
-  - Lacks a text label, which may confuse some users - Add a text label or tooltip that says 'Profile'.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-5/10
+4/10 - The flow needs significant ux improvements.
 </SCORE>
 </UX>
+
 <ACCESSIBILITY>
 <SUMMARY>
-The 'Profile' icon (ID: icon_profile) has accessibility issues that could affect users with disabilities.
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - No 'aria-label' provided for screen readers - Add an 'aria-label' with the text 'User Profile'.
-  - The icon is not reachable via keyboard navigation - Ensure the icon can be focused and activated via keyboard.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-4/10
+4/10 - The flow needs significant accessibility improvements.
 </SCORE>
 </ACCESSIBILITY>
+
 <INTERNATIONALIZATION>
 <SUMMARY>
-The 'Profile' icon may not be properly adapted for different locales.
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
 </SUMMARY>
 <FINDINGS>
-  - Iconography may not be universally recognized - Consider using culturally neutral icons.
-  - No localization for the tooltip text - Ensure tooltips and labels are localized.
-  - Date and time formats on the profile screen may not match user locale - Use locale-aware date and time formats.
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
 </FINDINGS>
 <SCORE>
-6/10
+4/10 - The flow needs significant internationalization improvements.
 </SCORE>
 </INTERNATIONALIZATION>
+
+#### Example of Throwing an Informative Error:
+
+\`\`\`
+Error: Unable to determine the next action due to insufficient information in the view hierarchy.
+\`\`\`
+
+Please provide your response below:"
+`;
+
+exports[`PilotPromptCreator with review types should not contain error in the prompt if it was not in the immediate previous step 1`] = `
+"# Next Step Generation and UX, Accessibility, Internationalization Reporting
+
+You are an AI assistant tasked with:
+
+1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
+   Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
+   and another string (which can be greater than one line) which describes your thoughts while creating the step.
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
+   If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
+
+2. Creating comprehensive UX, Accessibility, Internationalization reports that include a review, findings, and a score.
+
+Please adhere to the instructions below to provide detailed and helpful responses.
+
+## Context
+
+### Goal: "tap button"
+
+### View Hierarchy
+
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot Image
+
+No snapshot image is attached for this intent.
+
+### Previous Steps
+
+#### Step 1
+- Screen Name : "default 1"
+- Intent: "navigate to login screen"
+
+#### Step 2
+- Screen Name : "default 2"
+- Intent: "enter username"
+
+
+## Instructions
+
+Your tasks are as follows:
+
+1. **Next Action Prediction**: Generate a one-line string that precisely describes the next action the user should take to move closer to their goal: "tap button"
+
+2. **Thought Process**: Provide a detailed description (which can be more than one line) of your thought process while determining the next action.
+
+3. **Review Reports**: Create comprehensive review reports for each applicable section (e.g., UX, Accessibility, Internationalization) that include a summary, findings, and a score.
+
+### Please follow these steps carefully:
+
+1. Analyze the provided goal, view hierarchy, and previous steps to understand the user's progress and available actions.
+2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
+3. Consider the elements present in the view hierarchy to determine possible next actions.
+4. Determine the optimal next action the user should take to move closer to their goal.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+15. Also, provide comprehensive overall UX, Accessibility, Internationalization reviews with total scores, given all the screens seen in previous steps, inside the respective review sections.
+16. For each applicable review section (UX, Accessibility, Internationalization), create a comprehensive report enclosed within corresponding tags (e.g., <UX>, <ACCESSIBILITY>, <INTERNATIONALIZATION>), including a summary, findings, and a score out of 10.
+17. Ensure each section is clearly labeled and formatted as shown in the examples.
+18. You can use the same formatting syntax in your review summaries and findings:
+19.   - Regular text will be displayed in gray (default color)
+20.   - *Text between single asterisks* will be displayed in white
+21.   - **Text between double asterisks** will be displayed bold in gray
+22.   - ***Text between triple asterisks*** will be displayed bold in white
+23. This will help highlight important aspects of your reviews.
+24. If you cannot determine the next action due to ambiguity or missing information, throw an informative error explaining the problem in one sentence.
+
+### Verify the Prompt
+
+Before generating your response, please review the provided context and instructions to ensure they are clear and unambiguous.
+If you encounter any issues or have questions, please throw an informative error explaining the problem in one sentence.
+
+### Examples for Answer Formats
+
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain UX, Accessibility, Internationalization open and close tags.
+
+#### Next Action with Thoughts:
+
+<SCREENDESCRIPTION>
+Products Catalog Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
+</THOUGHTS>
+<ACTION>
+Tap on the 'Add to Cart' button beneath the red dress product
+</ACTION>
+
+<UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Intermediate Step - Cart Notification:
+
+<SCREENDESCRIPTION>
+Product Added Notification Overlay
+</SCREENDESCRIPTION>
+<THOUGHTS>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
+</THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   <UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
+<ACTION>
+success
+</ACTION>
+
+<UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Additional Example:
+
+<SCREENDESCRIPTION>
+User Profile Screen.
+</SCREENDESCRIPTION>
+<THOUGHTS>
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
+</THOUGHTS>
+<ACTION>
+Select the 'Profile' icon (ID: icon_profile)
+</ACTION>
+
+<UX>
+<SUMMARY>
+The product catalog page has some ***ux considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant ux improvements.
+</SCORE>
+</UX>
+
+<ACCESSIBILITY>
+<SUMMARY>
+The product catalog page has some ***accessibility considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant accessibility improvements.
+</SCORE>
+</ACCESSIBILITY>
+
+<INTERNATIONALIZATION>
+<SUMMARY>
+The product catalog page has some ***internationalization considerations*** that need to be addressed.
+</SUMMARY>
+<FINDINGS>
+  - The product catalog makes some "Add to Cart" buttons **require scrolling** to access.
+  - The notification *confirms addition* but lacks visual excitement and product imagery.
+  - Text-background contrast on product prices is ***critically low*** - Improve contrast with a darker font or background highlight.
+</FINDINGS>
+<SCORE>
+4/10 - The flow needs significant internationalization improvements.
+</SCORE>
+</INTERNATIONALIZATION>
+
+#### Example of Throwing an Informative Error:
+
+\`\`\`
+Error: Unable to determine the next action due to insufficient information in the view hierarchy.
+\`\`\`
+
+Please provide your response below:"
+`;
+
+exports[`PilotPromptCreator without review types should create a prompt for an intent correctly without additional review types 1`] = `
+"# Next Step Generation Reporting
+
+You are an AI assistant tasked with:
+
+1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
+   Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
+   and another string (which can be greater than one line) which describes your thoughts while creating the step.
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
+   If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
+
+Please adhere to the instructions below to provide detailed and helpful responses.
+
+## Context
+
+### Goal: "tap button"
+
+### View Hierarchy
+
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot Image
+
+A snapshot image is attached for visual reference.
+
+## Instructions
+
+Your tasks are as follows:
+
+1. **Next Action Prediction**: Generate a one-line string that precisely describes the next action the user should take to move closer to their goal: "tap button"
+
+2. **Thought Process**: Provide a detailed description (which can be more than one line) of your thought process while determining the next action.
+
+
+
+### Please follow these steps carefully:
+
+1. Analyze the provided goal, view hierarchy, and previous steps to understand the user's progress and available actions.
+2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
+3. Consider the elements present in the view hierarchy and the snapshot image to determine possible next actions.
+4. Determine the optimal next action the user should take to move closer to their goal.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+
+### Verify the Prompt
+
+Before generating your response, please review the provided context and instructions to ensure they are clear and unambiguous.
+If you encounter any issues or have questions, please throw an informative error explaining the problem in one sentence.
+
+### Examples for Answer Formats
+
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain undefined open and close tags.
+
+#### Next Action with Thoughts:
+
+<SCREENDESCRIPTION>
+Products Catalog Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
+</THOUGHTS>
+<ACTION>
+Tap on the 'Add to Cart' button beneath the red dress product
+</ACTION>
+
+
+
+#### Intermediate Step - Cart Notification:
+
+<SCREENDESCRIPTION>
+Product Added Notification Overlay
+</SCREENDESCRIPTION>
+<THOUGHTS>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
+</THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
+<ACTION>
+success
+</ACTION>
+
+
+
+#### Additional Example:
+
+<SCREENDESCRIPTION>
+User Profile Screen.
+</SCREENDESCRIPTION>
+<THOUGHTS>
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
+</THOUGHTS>
+<ACTION>
+Select the 'Profile' icon (ID: icon_profile)
+</ACTION>
+
+
+
+#### Example of Throwing an Informative Error:
+
+\`\`\`
+Error: Unable to determine the next action due to insufficient information in the view hierarchy.
+\`\`\`
+
+Please provide your response below:"
+`;
+
+exports[`PilotPromptCreator without review types should include previous intents in the context 1`] = `
+"# Next Step Generation Reporting
+
+You are an AI assistant tasked with:
+
+1. Predicting the next optimal action a user should take within an application to progress towards a specific goal or to declare success.
+   Please generate a one-line string that precisely describes the next action the user should take to move closer to their goal,
+   and another string (which can be greater than one line) which describes your thoughts while creating the step.
+   If the goal has been reached, include a <GOAL_SUMMARY>...</GOAL_SUMMARY> section summarizing what was accomplished and return 'success' as the action. 
+   If it is not possible to determine the next action, and you tried and failed, throw an error.
+   If there are any active loaders, spinners, animations, or partially rendered content in the screen, return "wait 3000" as the action.
+
+Please adhere to the instructions below to provide detailed and helpful responses.
+
+## Context
+
+### Goal: "tap button"
+
+### View Hierarchy
+
+\`\`\`
+<View><Button testID="submit" title="Submit" /></View>
+\`\`\`
+
+### Snapshot Image
+
+No snapshot image is attached for this intent.
+
+### Previous Steps
+
+#### Step 1
+- Screen Name : "default 1"
+- Intent: "navigate to login screen"
+
+#### Step 2
+- Screen Name : "default 2"
+- Intent: "enter username"
+
+
+## Instructions
+
+Your tasks are as follows:
+
+1. **Next Action Prediction**: Generate a one-line string that precisely describes the next action the user should take to move closer to their goal: "tap button"
+
+2. **Thought Process**: Provide a detailed description (which can be more than one line) of your thought process while determining the next action.
+
+
+
+### Please follow these steps carefully:
+
+1. Analyze the provided goal, view hierarchy, and previous steps to understand the user's progress and available actions.
+2. Check if there are any active loaders, spinners, animations, or partially rendered content in the view hierarchy - if so, the next action should be to wait for 3 seconds ('wait 3000').
+3. Consider the elements present in the view hierarchy to determine possible next actions.
+4. Determine the optimal next action the user should take to move closer to their goal.
+5. Always describe the next action using plain, natural language rather than technical terms. Avoid using elements like coordinates or test IDs.
+6. Ensure the action is directly related to available elements in the view hierarchy.
+7. Make sure to create a unique screen name enclosed with <SCREENDESCRIPTION> blocks according to the snapshot and view.
+8. Generate a one-line string that precisely describes this next action, enclosed within \`<ACTION>\` tags.
+9. Provide a detailed description of your thought process enclosed within \`<THOUGHTS>\` tags. Within your thoughts, you can use simple formatting:
+10.   - Regular text will be displayed in gray (default color)
+11.   - *Text between single asterisks* will be displayed in white
+12.   - **Text between double asterisks** will be displayed bold in gray
+13.   - ***Text between triple asterisks*** will be displayed bold in white
+14. If the goal is achieved, add a separate \`<GOAL_SUMMARY>\` block after the \`<THOUGHTS>\` section, summarizing the overall flow and findings, and set the action to 'success'. The presence of the GOAL_SUMMARY tag is what indicates the goal has been achieved. You can use the same formatting syntax in your goal summary.
+
+### Verify the Prompt
+
+Before generating your response, please review the provided context and instructions to ensure they are clear and unambiguous.
+If you encounter any issues or have questions, please throw an informative error explaining the problem in one sentence.
+
+### Examples for Answer Formats
+
+Given goal: 'Add a product to the shopping cart and validate it was added correctly.' The review must contain undefined open and close tags.
+
+#### Next Action with Thoughts:
+
+<SCREENDESCRIPTION>
+Products Catalog Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I need to *add a product* to the shopping cart. The page displays **multiple products** in a grid layout, each with an image, name, price, and an ***"Add to Cart" button***. The red dress in the second position looks like a good option to add to the cart.
+</THOUGHTS>
+<ACTION>
+Tap on the 'Add to Cart' button beneath the red dress product
+</ACTION>
+
+
+
+#### Intermediate Step - Cart Notification:
+
+<SCREENDESCRIPTION>
+Product Added Notification Overlay
+</SCREENDESCRIPTION>
+<THOUGHTS>
+A notification has appeared at the top of the screen *confirming the red dress was added*. Now I need to **check the cart** to verify the product was added correctly. There's a ***"View Cart" button*** in the notification and a cart icon in the header.
+</THOUGHTS>
+<ACTION>
+Tap on the "View Cart" button in the notification
+</ACTION>
+
+   
+
+#### Example of Success - Validation Complete:
+
+<SCREENDESCRIPTION>
+Shopping Cart Page
+</SCREENDESCRIPTION>
+<THOUGHTS>
+I can now see the shopping cart page with the red dress that was added. The product appears with its image, name "Red Cocktail Dress", price "$49.99", and quantity set to 1. The cart subtotal shows "$49.99" which matches the product price. This confirms the product was successfully added to the cart with the correct details.
+</THOUGHTS>
+<GOAL_SUMMARY>
+The goal has been ***successfully achieved***. I added the *red dress* to the shopping cart and **verified it appears correctly** with the right details. The flow provided clear feedback at each step, though there were opportunities to improve the messaging and layout.
+</GOAL_SUMMARY>
+<ACTION>
+success
+</ACTION>
+
+
+
+#### Additional Example:
+
+<SCREENDESCRIPTION>
+User Profile Screen.
+</SCREENDESCRIPTION>
+<THOUGHTS>
+To view the user profile, selecting the ***'Profile' icon*** (ID: *icon_profile*) is **required**.
+</THOUGHTS>
+<ACTION>
+Select the 'Profile' icon (ID: icon_profile)
+</ACTION>
+
+
 
 #### Example of Throwing an Informative Error:
 

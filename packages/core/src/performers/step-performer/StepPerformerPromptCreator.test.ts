@@ -118,6 +118,68 @@ describe("PromptCreator", () => {
     expect(prompt).toMatchSnapshot();
   });
 
+  it("should include error in the prompt if previous step failed", () => {
+    const intent = "tap button";
+    const previousSteps: PreviousStep[] = [
+      {
+        step: "navigate to login screen",
+        code: 'await element(by.id("login")).tap();',
+        result: "success",
+      },
+      {
+        step: "enter username",
+        code: 'await element(by.id("username")).typeText("john_doe");',
+        error: "could not find element",
+      },
+    ];
+    const viewHierarchy =
+      '<View><Button testID="submit" title="Submit" /></View>';
+
+    const prompt = promptCreator.createPrompt(
+      intent,
+      viewHierarchy,
+      false,
+      previousSteps,
+    );
+
+    expect(prompt).toMatchSnapshot();
+    expect(prompt).toContain("could not find element");
+  });
+
+  it("should not include error if the error was not in the immediate previous step", () => {
+    const intent = "tap button";
+    const previousSteps: PreviousStep[] = [
+      {
+        step: "navigate to login screen",
+        code: 'await element(by.id("login")).tap();',
+        result: "success",
+      },
+      {
+        step: "enter username",
+        code: 'await element(by.id("username")).typeText("john_doe");',
+        error: "could not find element",
+      },
+      {
+        step: "enter username",
+        code: 'await element(by.id("username")).typeText("john_doe");',
+        result: "john doe",
+      },
+    ];
+
+    const viewHierarchy =
+      '<View><Button testID="submit" title="Submit" /></View>';
+
+    const prompt = promptCreator.createPrompt(
+      intent,
+      viewHierarchy,
+      false,
+      previousSteps,
+    );
+
+    expect(prompt).toMatchSnapshot();
+    expect(prompt).not.toContain("could not find element");
+  });
+
   it("should handle when no snapshot image is attached", () => {
     const intent = "expect button to be visible";
     const viewHierarchy =
@@ -128,44 +190,134 @@ describe("PromptCreator", () => {
     expect(prompt).toMatchSnapshot();
   });
 
-  it("should include API search results when provided", () => {
-    const intent = "tap button";
-    const viewHierarchy =
-      '<View><Button testID="submit" title="Submit" /></View>';
-    const apiSearchResults = [
-      "Semantic Category Matches:",
-      "1. Actions",
-      "   - Match Confidence: High - Contains tap-related actions",
-      "   - Context Notes: Direct interaction with buttons",
-      "",
-      "Semantic API Matches:",
-      "1. tap(element: Element)",
-      "   - Match Confidence: High - Direct semantic match for tapping",
-      "   - Context Notes: Primary method for button interaction",
-      "2. by.id(id: string)",
-      "   - Match Confidence: Medium - Required for element selection",
-      "   - Context Notes: Used to locate the target button",
-    ].join("\n");
+  describe("CACHE_VALIDATION_MATCHER behavior", () => {
+    it("should include CACHE_VALIDATION_MATCHER instructions when snapshot is attached", () => {
+      const intent = "tap submit button";
+      const viewHierarchy =
+        '<View><Button testID="submit" title="Submit" /></View>';
 
-    const prompt = promptCreator.createPrompt(
-      intent,
-      viewHierarchy,
-      false,
-      [],
-      apiSearchResults,
-    );
+      const prompt = promptCreator.createPrompt(
+        intent,
+        viewHierarchy,
+        true,
+        [],
+      );
 
-    expect(prompt).toMatchSnapshot();
+      expect(prompt).toContain("CACHE_VALIDATION_MATCHER");
+      expect(prompt).toContain("You must provide TWO separate outputs");
+      expect(prompt).toContain(
+        "element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags",
+      );
+      expect(prompt).toMatchSnapshot();
+    });
+
+    it("should NOT include CACHE_VALIDATION_MATCHER instructions when no snapshot is attached", () => {
+      const intent = "tap submit button";
+      const viewHierarchy =
+        '<View><Button testID="submit" title="Submit" /></View>';
+
+      const prompt = promptCreator.createPrompt(
+        intent,
+        viewHierarchy,
+        false,
+        [],
+      );
+
+      expect(prompt).not.toContain("CACHE_VALIDATION_MATCHER");
+      expect(prompt).not.toContain("You must provide TWO separate outputs");
+      expect(prompt).not.toContain(
+        "element validation code in <CACHE_VALIDATION_MATCHER></CACHE_VALIDATION_MATCHER> tags",
+      );
+      expect(prompt).toMatchSnapshot();
+    });
   });
 
-  it("should not include API search results section when not provided", () => {
-    const intent = "tap button";
-    const viewHierarchy =
-      '<View><Button testID="submit" title="Submit" /></View>';
+  describe("Framework-specific references", () => {
+    it("should use specific framework name when available", () => {
+      const mockAPIWithName: TestingFrameworkAPICatalog = {
+        name: "Playwright",
+        description: "End-to-end testing framework",
+        context: {},
+        categories: mockAPI.categories,
+      };
 
-    const prompt = promptCreator.createPrompt(intent, viewHierarchy, false, []);
+      const promptCreatorWithName = new StepPerformerPromptCreator(
+        mockAPIWithName,
+      );
+      const intent = "click button";
+      const viewHierarchy =
+        '<View><Button testID="submit" title="Submit" /></View>';
 
-    expect(prompt).toMatchSnapshot();
+      const prompt = promptCreatorWithName.createPrompt(
+        intent,
+        viewHierarchy,
+        true,
+        [],
+      );
+
+      expect(prompt).toContain("using Playwright");
+      expect(prompt).toContain("Playwright's wait methods");
+      expect(prompt).toContain("Playwright's documented wait APIs");
+      expect(prompt).toContain("Use the provided Playwright APIs");
+      expect(prompt).toContain("Available Playwright API");
+      expect(prompt).toMatchSnapshot();
+    });
+
+    it("should use generic references when no framework name is provided", () => {
+      const intent = "click button";
+      const viewHierarchy =
+        '<View><Button testID="submit" title="Submit" /></View>';
+
+      const prompt = promptCreator.createPrompt(
+        intent,
+        viewHierarchy,
+        true,
+        [],
+      );
+
+      expect(prompt).toContain("using the mentioned testing framework");
+      expect(prompt).toContain("the testing framework's wait methods");
+      expect(prompt).toContain("the testing framework's documented wait APIs");
+      expect(prompt).toContain("Use the provided the testing framework APIs");
+      expect(prompt).toContain("Available Testing Framework API");
+      expect(prompt).toMatchSnapshot();
+    });
+  });
+
+  describe("Synchronization instructions", () => {
+    it("should include synchronization instructions for both scenarios", () => {
+      const intent = "tap button";
+      const viewHierarchy =
+        '<View><Button testID="submit" title="Submit" /></View>';
+
+      // With screenshot
+      const promptWithSnapshot = promptCreator.createPrompt(
+        intent,
+        viewHierarchy,
+        true,
+        [],
+      );
+      expect(promptWithSnapshot).toContain(
+        "Include appropriate synchronization",
+      );
+      expect(promptWithSnapshot).toContain(
+        "wait methods to ensure elements are present",
+      );
+
+      // Without screenshot
+      const promptWithoutSnapshot = promptCreator.createPrompt(
+        intent,
+        viewHierarchy,
+        false,
+        [],
+      );
+      expect(promptWithoutSnapshot).toContain(
+        "Include appropriate synchronization",
+      );
+      expect(promptWithoutSnapshot).toContain(
+        "wait methods to ensure elements are present",
+      );
+    });
   });
 
   describe("extentAPICategories", () => {
